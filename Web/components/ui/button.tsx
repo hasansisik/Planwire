@@ -47,7 +47,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "tracking-wider",
           "font-bold",
-          "uppercase",
           buttonVariants({ variant, size, className })
         )}
         ref={ref}

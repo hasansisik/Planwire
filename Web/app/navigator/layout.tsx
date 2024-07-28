@@ -35,8 +35,7 @@ export default function DashboardLayout({
           <MenuTitle />
         </div>
       )}
-      <div className="overflow-auto py-2 px-4">
-        <h3 className="pb-4">Tekrar Hoşgeldin, Hasan!</h3>
+      <div className="overflow-auto px-10 py-5">
         {children}
       </div>
     </div>
