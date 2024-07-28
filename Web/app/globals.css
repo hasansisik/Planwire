@@ -95,7 +95,7 @@
   .flex-center {
     @apply flex flex-row justify-center items-center gap-2;
   }
-  .tasks-container {
+  .cards-container {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
@@ -104,4 +104,9 @@
     flex: 1 1 calc(33.333% - 16px);
     max-width: calc(33.333% - 16px); 
   }
+  .plan-card {
+    flex: 1 1 calc(14.2857142857% - 16px);
+    max-width: calc(14.2857142857% - 16px); 
+}
+
 }

@@ -106,7 +106,7 @@ const Tasks: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="tasks-container">
+      <div className="cards-container">
         {tasks.map((task) => (
           <Card key={task.id} className="task-card">
             <CardHeader>
