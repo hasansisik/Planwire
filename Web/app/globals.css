@@ -92,5 +92,7 @@
   h6 {
     font-size: 1rem;
   }
-
+  .flex-center {
+    @apply flex flex-row justify-center items-center gap-2;
+  }
 }
