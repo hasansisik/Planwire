@@ -45,7 +45,7 @@ interface Plan {
 }
 
 export default function Plans() {
-  const [tasks, setTasks] = useState<Plan[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -116,7 +116,7 @@ export default function Plans() {
             ],
           },
         ];
-        setTasks(plans);
+        setPlans(plans);
       } catch (error) {
         console.error("Hata:", error);
       }
@@ -161,7 +161,7 @@ export default function Plans() {
           </DialogContent>
         </Dialog>
       </div>
-      {tasks.map((item) => (
+      {plans.map((item) => (
         <AccordionItem key={item.id} className="pb-3" value={item.id}>
           <AccordionTrigger>
             <div className="flex flex-row gap-2">

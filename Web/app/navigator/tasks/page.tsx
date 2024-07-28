@@ -33,7 +33,7 @@ interface Task {
   avatars: string[];
 }
 
-const Tasks: React.FC = () => {
+export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
@@ -143,5 +143,3 @@ const Tasks: React.FC = () => {
     </div>
   );
 };
-
-export default Tasks;
