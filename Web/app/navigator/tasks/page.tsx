@@ -1,9 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import AvatarGroup from "@/components/ui/avatar-group";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -21,14 +23,53 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
 
-export default function Tasks() {
-  const avatars = [
-    "/user.jpg",
-    "/user.jpg",
-    "/user.jpg",
-    "/user.jpg",
-    "/user.jpg",
-  ];
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  assignee: string;
+  avatars: string[];
+}
+
+const Tasks: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const tasks: Task[] = [
+        {
+          id: 1,
+          title: "Malzeme Eksikliği",
+          description: "Asansör kuyusuna beton döküldü",
+          date: "29.07.2024",
+          location: "DA-A-1K",
+          assignee: "Nedim Yeşilçınar",
+          avatars: [
+            "/user.jpg",
+            "/user.jpg",
+            "/user.jpg",
+            "/user.jpg",
+            "/user.jpg",
+          ],
+        },
+        {
+          id: 2,
+          title: "Elektrik Sorunu",
+          description: "Elektrik panosunda arıza tespit edildi",
+          date: "30.07.2024",
+          location: "DA-B-2L",
+          assignee: "Ayşe Yılmaz",
+          avatars: ["/user.jpg", "/user.jpg"],
+        },
+      ];
+      setTasks(tasks);
+    };
+
+    fetchTasks();
+  }, []);
+
   return (
     <div>
       <div className="pb-5">
@@ -65,38 +106,42 @@ export default function Tasks() {
           </DialogContent>
         </Dialog>
       </div>
-      <div>
-        <Card className="w-[400px] gap-5 ">
-          <CardHeader>
-            <CardTitle className="text-base">
-              <div className="flex-center gap-5 justify-between">
-                <p className="text-sm font-normal">#14</p>
-                <p className="text-sm font-normal">Malzeme Eksikliği</p>
-                <div className="flex-center">
-                  <Image
-                    src="/user.jpg"
-                    width="40"
-                    height="40"
-                    style={{ borderRadius: "50%" }}
-                    alt="Planwire"
-                  />
-                  <p className="text-sm font-normal">Nedim Yeşilçınar</p>
+      <div className="tasks-container">
+        {tasks.map((task) => (
+          <Card key={task.id} className="task-card">
+            <CardHeader>
+              <CardTitle className="text-base">
+                <div className="flex-center gap-5 justify-between">
+                  <p className="text-sm font-normal">#{task.id}</p>
+                  <p className="text-sm font-normal">{task.title}</p>
+                  <div className="flex-center">
+                    <Image
+                      src="/user.jpg"
+                      width="40"
+                      height="40"
+                      style={{ borderRadius: "50%" }}
+                      alt="Planwire"
+                    />
+                    <p className="text-sm font-normal">{task.assignee}</p>
+                  </div>
                 </div>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <h6>Asansör kuyusuna beton döküldü </h6>
-          </CardContent>
-          <CardFooter className="flex-center gap-5 justify-between">
-              <p className="text-sm font-normal">29.07.2024</p>
-              <h6 className="text-sm">DA-A-1K</h6>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h6>{task.description}</h6>
+            </CardContent>
+            <CardFooter className="flex-center gap-5 justify-between">
+              <p className="text-sm font-normal">{task.date}</p>
+              <h6 className="text-sm">{task.location}</h6>
               <div className="flex-center justify-between">
-                <AvatarGroup avatars={avatars} />
+                <AvatarGroup avatars={task.avatars} />
               </div>
-          </CardFooter>
-        </Card>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export default Tasks;
