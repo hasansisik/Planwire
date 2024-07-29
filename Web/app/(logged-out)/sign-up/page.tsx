@@ -39,16 +39,18 @@ const accountTypeSchema = z
     accountType: z.enum(["personal", "company"]),
     companyName: z.string().optional(),
     numberOfEmployees: z.coerce.number().optional(),
-    acceptTerms: z.boolean({
-      required_error: "You must accept the terms and conditions",
-    }).refine((checked)=> checked, "You must accept the terms and conditions"),
+    acceptTerms: z
+      .boolean({
+        required_error: "You must accept the terms and conditions",
+      })
+      .refine((checked) => checked, "Şartlar ve koşulları kabul etmelisiniz"),
   })
   .superRefine((data, ctx) => {
     if (data.accountType === "company" && !data.companyName) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["companyName"],
-        message: "Company account is not supported yet",
+        message: "Şirket hesabı için şirket adı gerekli",
       });
     }
     if (
@@ -58,7 +60,7 @@ const accountTypeSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["numberOfEmployees"],
-        message: "Number of employees is not",
+        message: "Çalışan sayısı girilmemiş veya 1'den küçük olamaz",
       });
     }
   });
@@ -67,11 +69,11 @@ const passwordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
+      .min(8, "Şifre en az 8 karakter olmalıdır")
       .refine((password) => {
         // At least one uppercase letter and one special character
         return /^(?=.*[!@#$%^&*.])(?=.*[A-Z]).*$/.test(password);
-      }, "Password must contain at least one uppercase letter and one special character"),
+      }, "Şifre en az bir büyük harf ve bir özel karakter içermelidir"),
     passwordConfirm: z.string(),
   })
   .superRefine((data, ctx) => {
@@ -79,7 +81,7 @@ const passwordSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["passwordConfirm"],
-        message: "Passwords do not match",
+        message: "Parolalar uyuşmuyor",
       });
     }
   });
@@ -115,7 +117,9 @@ export default function SignupPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Kayıt Ol</CardTitle>
-          <CardDescription>This is the Sign page.</CardDescription>
+          <CardDescription>
+            Kayıt olmak için bilgileri doldurun lütfen
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -241,15 +245,17 @@ export default function SignupPage() {
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel>I accept the terms and conditions</FormLabel>
+                      <FormLabel>
+                        Ben şartları ve koşulları kabul ediyorum
+                      </FormLabel>
                     </div>
                     <FormDescription>
-                      By creating an account you agree to our
+                      Bir hesap oluşturarak şunları kabul etmiş olursunuz 
                       <Link
                         href="/terms"
-                        className="text-primary hover:underline"
+                        className="text-primary hover:underline font-bold"
                       >
-                        Terms & Conditions
+                         Şartlar ve Koşullar
                       </Link>
                     </FormDescription>
                     <FormMessage />

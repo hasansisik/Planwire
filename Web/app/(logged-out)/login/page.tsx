@@ -30,11 +30,11 @@ const formSchema = z.object({
   email: z.string().email(),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
+    .min(8, "Şifre en az 8 karakter olmalıdır")
     .refine((password) => {
       // At least one uppercase letter and one special character
       return /^(?=.*[!@#$%^&*.])(?=.*[A-Z]).*$/.test(password);
-    }, "Password must contain at least one uppercase letter and one special character"),
+    }, "Şifre en az bir büyük harf ve bir özel karakter içermelidir"),
 });
 
 export default function LoginPage() {
@@ -58,7 +58,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Giriş Yap</CardTitle>
-          <CardDescription>This is the login page.</CardDescription>
+          <CardDescription>Giriş yapmak için bilgileri doldurun.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Şifre</FormLabel>
                     <FormControl>
                       <PasswordInput placeholder="●●●●●●●●" {...field} />
                     </FormControl>

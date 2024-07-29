@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/accordion";
 import { FileBadge, FileLock2, FileText } from "lucide-react";
 import privacyPolicy from "@/public/Data/privacyPolicy";
-import cookiePolicy from "@/public/Data/CookiePolicy";
-import termsPolicy from "@/public/Data/TermsPolicy";
+import cookiePolicy from "@/public/Data/cookiePolicy";
+import termsPolicy from "@/public/Data/termsPolicy";
 
 export default function PolitcyPage() {
   return (

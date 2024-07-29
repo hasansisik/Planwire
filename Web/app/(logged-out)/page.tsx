@@ -1,24 +1,104 @@
-import { Button } from "@/components/ui/button";
-import { PersonStandingIcon } from "lucide-react";
-import Link from "next/link";
 
-export default function BlogPage() {
+"use client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { PersonStandingIcon } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useRouter } from "next/navigation";
+
+const formSchema = z.object({
+  code: z.string(),
+  password: z
+    .string()
+    .min(8, "Şifre en az 8 karakter olmalıdır")
+});
+
+export default function CompanyPage() {
+  const router = useRouter();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      code: "",
+      password: "",
+    },
+  });
+
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log("Şirket Girişi Başarılı!", data);
+    router.push("/welcome");
+  };
+
   return (
     <>
-      <h1 className="flex gap-2 items-center">
-        <PersonStandingIcon size={50} color="#D2FF53" />
-        Hoşgeldiniz Sitemize !
-      </h1>
-      <p>Sitemize Hoşgeldiniz</p>
-      <div className="flex gap-3 items-center">
-        <Button asChild>
-          <Link href="/login">Giriş Yap</Link>
-        </Button>
-        <small>or</small>
-        <Button asChild variant="outline">
-          <Link href="/sign-up">Kayıt Ol</Link>
-        </Button>
-      </div>
+      <PersonStandingIcon size={50} />
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Şirket Giriş</CardTitle>
+          <CardDescription>
+            Şirket bilgileri ile giriş yapabilirsiniz.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={form.handleSubmit(handleSubmit)}
+            >
+              {/* Company Code Input */}
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Şirket Kodu</FormLabel>
+                    <FormControl>
+                      <Input placeholder="sirketkodu" {...field} />
+                    </FormControl>
+                    <FormDescription>Şirket Kodunuzu girin</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Password Input */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Şifre</FormLabel>
+                    <FormControl>
+                      <PasswordInput placeholder="●●●●●●●●" {...field} />
+                    </FormControl>
+                    <FormDescription>Şifrenizi girin</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Şirket Girişi</Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </>
   );
 }
