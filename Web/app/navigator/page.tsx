@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { GalleryVerticalEnd, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Plan {
   id: string;
@@ -171,25 +172,27 @@ export default function Plans() {
           </AccordionTrigger>
           <AccordionContent className="cards-container">
             {item.plans.map((plan, index) => (
-              <Card key={index} className="plan-card">
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    <div className="flex flex-row justify-between">
-                      <p>{plan.code}</p>
-                      <p className="text-sm font-normal">{plan.date}</p>
-                    </div>
-                  </CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Image
-                    src={plan.image}
-                    width="175"
-                    height="100"
-                    alt="Planwire"
-                  />
-                </CardContent>
-              </Card>
+              <Link key={index} href={`/navigator/plan`} className="plan-card">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      <div className="flex flex-row justify-between">
+                        <p>{plan.code}</p>
+                        <p className="text-sm font-normal">{plan.date}</p>
+                      </div>
+                    </CardTitle>
+                    <CardDescription>{plan.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Image
+                      src={plan.image}
+                      width="175"
+                      height="100"
+                      alt="Planwire"
+                    />
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </AccordionContent>
         </AccordionItem>

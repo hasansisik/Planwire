@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Task {
   id: number;
@@ -35,7 +36,6 @@ interface Task {
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
-
   useEffect(() => {
     const fetchTasks = async () => {
       const tasks: Task[] = [
@@ -66,7 +66,6 @@ export default function Tasks() {
       ];
       setTasks(tasks);
     };
-
     fetchTasks();
   }, []);
 
@@ -108,38 +107,40 @@ export default function Tasks() {
       </div>
       <div className="cards-container">
         {tasks.map((task) => (
-          <Card key={task.id} className="task-card">
-            <CardHeader>
-              <CardTitle className="text-base">
-                <div className="flex-center gap-5 justify-between">
-                  <p className="text-sm font-normal">#{task.id}</p>
-                  <p className="text-sm font-normal">{task.title}</p>
-                  <div className="flex-center">
-                    <Image
-                      src="/user.jpg"
-                      width="40"
-                      height="40"
-                      style={{ borderRadius: "50%" }}
-                      alt="Planwire"
-                    />
-                    <p className="text-sm font-normal">{task.assignee}</p>
+          <Link key={task.id} href={`/navigator/tasks/details`} className="task-card">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  <div className="flex-center gap-5 justify-between">
+                    <p className="text-sm font-normal">#{task.id}</p>
+                    <p className="text-sm font-normal">{task.title}</p>
+                    <div className="flex-center">
+                      <Image
+                        src="/user.jpg"
+                        width="40"
+                        height="40"
+                        style={{ borderRadius: "50%" }}
+                        alt="Planwire"
+                      />
+                      <p className="text-sm font-normal">{task.assignee}</p>
+                    </div>
                   </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <h6>{task.description}</h6>
+              </CardContent>
+              <CardFooter className="flex-center gap-5 justify-between">
+                <p className="text-sm font-normal">{task.date}</p>
+                <h6 className="text-sm">{task.location}</h6>
+                <div className="flex-center justify-between">
+                  <AvatarGroup avatars={task.avatars} />
                 </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <h6>{task.description}</h6>
-            </CardContent>
-            <CardFooter className="flex-center gap-5 justify-between">
-              <p className="text-sm font-normal">{task.date}</p>
-              <h6 className="text-sm">{task.location}</h6>
-              <div className="flex-center justify-between">
-                <AvatarGroup avatars={task.avatars} />
-              </div>
-            </CardFooter>
-          </Card>
+              </CardFooter>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
   );
-};
+}
