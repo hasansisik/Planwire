@@ -6,19 +6,19 @@ import { cn } from "@/lib/utils";
 
 export default function MainMenu({ className }: { className?: string }) {
   return (
-    <nav className={cn(`overflow-auto flex flex-col p-10`, className)}>
+    <nav className={cn(`overflow-auto flex flex-col `, className)}>
       <h5>Profil Ayarları</h5>
       <ul className="flex flex-col py-4 px-2 gap-3 grow">
-        <MenuItem href="/profile" icon="UserRoundPen">
+        <MenuItem href="/navigator/profile" icon="UserRoundPen">
           Profili Düzenle
         </MenuItem>
-        <MenuItem href="/profile/project-edit" icon="SquarePen">
+        <MenuItem href="/navigator/profile/project-edit" icon="SquarePen">
           Projeyi Düzenle
         </MenuItem>
-        <MenuItem href="/profile/helpers" icon="LifeBuoy">
+        <MenuItem href="/navigator/profile/helpers" icon="LifeBuoy">
           Yardım ve Destek
         </MenuItem>
-        <MenuItem href="/profile/politcy" icon="Clipboard">
+        <MenuItem href="/navigator/profile/politcy" icon="Clipboard">
           Politikalar ve Gizlilik
         </MenuItem>
         <MenuItem href="" icon="LogOut">

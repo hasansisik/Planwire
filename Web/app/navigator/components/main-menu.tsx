@@ -5,11 +5,18 @@ import Link from "next/link";
 import { LightDarkToggle } from "@/components/ui/light-dark-toggle";
 import { cn } from "@/lib/utils";
 
-export default function MainMenu({className}: {className?: string}) {
+export default function MainMenu({ className }: { className?: string }) {
   return (
-    <nav className={cn(`md:bg-muted overflow-auto md:border-r md:border-gray-300 flex flex-col`,className)}>
+    <nav
+      className={cn(
+        `md:bg-muted overflow-auto md:border-r md:border-gray-300 flex flex-col`,
+        className
+      )}
+    >
       <header className="border-b dark:border-b-black border-b-zinc-300">
-        <MenuTitle />
+        <Link href="/projects">
+          <MenuTitle />
+        </Link>
       </header>
       <ul className="flex flex-col py-4 px-2 gap-3 grow">
         <MenuItem href="/navigator" icon="LayoutPanelLeft">
@@ -26,13 +33,17 @@ export default function MainMenu({className}: {className?: string}) {
         </MenuItem>
       </ul>
       <footer className="flex gap-2 px-3 py-4 items-center">
-        <Avatar>
-          <AvatarFallback className="bg-pink-300 dark:bg-pink-800">
-            NY
-          </AvatarFallback>
-        </Avatar>
-        <Link href="/" className="hover:underline" >Çıkış</Link>
-        <LightDarkToggle className="ml-auto"/>
+        <Link href="/navigator/profile">
+          <Avatar>
+            <AvatarFallback className="bg-pink-300 dark:bg-pink-800">
+              NY
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        <Link href="/" className="hover:underline">
+          Çıkış
+        </Link>
+        <LightDarkToggle className="ml-auto" />
       </footer>
     </nav>
   );
