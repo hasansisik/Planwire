@@ -41,7 +41,7 @@ const accountTypeSchema = z
     numberOfEmployees: z.coerce.number().optional(),
     acceptTerms: z
       .boolean({
-        required_error: "You must accept the terms and conditions",
+        required_error: "Şartlar ve koşulları kabul etmelisiniz",
       })
       .refine((checked) => checked, "Şartlar ve koşulları kabul etmelisiniz"),
   })
@@ -87,7 +87,7 @@ const passwordSchema = z
   });
 
 const baseSchema = z.object({
-  email: z.string().email()
+  email: z.string().email("Geçerli bir email adresi girin"),
 });
 
 const formSchema = baseSchema.and(accountTypeSchema).and(passwordSchema);
