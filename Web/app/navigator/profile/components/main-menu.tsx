@@ -1,7 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MenuItem from "./menu-item";
-import Link from "next/link";
-import { LightDarkToggle } from "@/components/ui/light-dark-toggle";
 import { cn } from "@/lib/utils";
 
 export default function MainMenu({ className }: { className?: string }) {

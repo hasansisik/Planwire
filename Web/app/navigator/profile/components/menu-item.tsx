@@ -10,7 +10,7 @@ import { DrawerContext } from "@/components/ui/drawer";
 type Props = {
   children: string;
   href: string;
-  icon?: keyof typeof Icons; // İkon ismini dışarıdan almak için
+  icon?: keyof typeof Icons;
 };
 
 export default function MenuItem({ children, href, icon }: Props) {
