@@ -12,7 +12,7 @@ export default function MainMenu({className}: {className?: string}) {
         <MenuTitle />
       </header>
       <ul className="flex flex-col py-4 px-2 gap-3 grow">
-        <MenuItem href="/navigator/plans" icon="LayoutPanelLeft">
+        <MenuItem href="/navigator" icon="LayoutPanelLeft">
           Planlar
         </MenuItem>
         <MenuItem href="/navigator/tasks" icon="LayoutList">
