@@ -21,22 +21,22 @@ import { LayoutGrid, Pencil, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
 import { getProjects } from "@/redux/actions/projectActions";
-import { RootState } from "@/redux/store";
 
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
 };
 
 interface Project {
-  id: string;
+  _id: string;
   projectName: string;
   projectCode: string;
   logo: string;
 }
 
 export default function Projects() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const projects = useSelector((state: RootState) => state.projects.projects);
 
   useEffect(() => {
@@ -98,17 +98,19 @@ export default function Projects() {
       </div>
       <div className="cards-container">
         {projects.map((project: Project) => (
-          <Card key={project.id} className="form-card">
+          <Card key={project._id} className="form-card">
             <CardHeader>
               <CardTitle className="text-base">{project.projectName}</CardTitle>
               <CardDescription>{project.projectCode}</CardDescription>
             </CardHeader>
             <CardContent>
               <Image
-                src="/planwirelogo.png"
+                src={project.logo}
                 width="150"
                 height="70"
                 alt="Planwite"
+                style={{ width: "auto", height: "auto" }}
+                priority
               />
             </CardContent>
           </Card>
