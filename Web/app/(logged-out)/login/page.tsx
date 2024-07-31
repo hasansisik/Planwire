@@ -25,19 +25,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/redux/hook";
+import { login, LoginPayload } from "@/redux/actions/userActions";
+
+// localStorage'dan companyId'yi almak için fonksiyon
+const getCompanyId = () => {
+  return localStorage.getItem("companyId");
+};
 
 const formSchema = z.object({
   email: z.string().email(),
   password: z
     .string()
     .min(8, "Şifre en az 8 karakter olmalıdır")
-    .refine((password) => {
-      // At least one uppercase letter and one special character
-      return /^(?=.*[!@#$%^&*.])(?=.*[A-Z]).*$/.test(password);
-    }, "Şifre en az bir büyük harf ve bir özel karakter içermelidir"),
 });
 
 export default function LoginPage() {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,10 +51,19 @@ export default function LoginPage() {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log("Giriş Başarılı!", data);
-    router.push("/projects");
-  };
+   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+     const companyId = getCompanyId();
+     const actionResult = await dispatch(login({ ...data, companyId } as LoginPayload));
+     if (login.fulfilled.match(actionResult)) {
+       if (actionResult.payload) {
+         router.push("/projects");
+       } else {
+         console.error("Giriş Başarısız: Geçersiz yanıt formatı");
+       }
+     } else if (login.rejected.match(actionResult)) {
+       console.error("Giriş Başarısız:", actionResult.error.message);
+     }
+   };
 
   return (
     <>

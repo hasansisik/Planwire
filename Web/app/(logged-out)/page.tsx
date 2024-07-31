@@ -34,7 +34,7 @@ const formSchema = z.object({
 });
 
 export default function CompanyPage() {
-  const dispatch = useAppDispatch(); // useDispatch yerine useAppDispatch
+  const dispatch = useAppDispatch(); 
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
