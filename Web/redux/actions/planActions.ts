@@ -1,0 +1,119 @@
+import axios from "axios";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { server } from "../../config";
+
+interface CreatePlanPayload {
+  projectId: string;
+  planCategory: string;
+  planCode: string;
+  planName: string;
+  planImages: string[];
+}
+
+interface UpdatePlanPayload {
+  planId: string;
+  planCategory: string;
+  planCode: string;
+  planName: string;
+  planImages: string[];
+}
+
+export const createPlan = createAsyncThunk(
+  "plan/create",
+  async (payload: CreatePlanPayload, thunkAPI) => {
+    try {
+      const { data } = await axios.post(
+        `${server}/plan/${payload.projectId}`,
+        payload
+      );
+      return data.plan;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const getPlans = createAsyncThunk(
+  "plan/getAll",
+  async (projectId: string, thunkAPI) => {
+    try {
+      const { data } = await axios.get(`${server}/plan/${projectId}`);
+      return data.plans;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const getPlan = createAsyncThunk(
+  "plan/get",
+  async (planId: string, thunkAPI) => {
+    try {
+      const { data } = await axios.get(`${server}/plan/${planId}`);
+      return data.plan;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const updatePlan = createAsyncThunk(
+  "plan/update",
+  async (payload: UpdatePlanPayload, thunkAPI) => {
+    try {
+      const { data } = await axios.put(
+        `${server}/plan/${payload.planId}`,
+        payload
+      );
+      return data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const deletePlan = createAsyncThunk(
+  "plan/delete",
+  async (planId: string, thunkAPI) => {
+    try {
+      const { data } = await axios.delete(`${server}/plan/${planId}`);
+      return data.message;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+interface CreatePinPayload {
+  planId: string;
+  x: number;
+  y: number;
+  task: string;
+}
+
+export const createPin = createAsyncThunk(
+  "plan/createPin",
+  async (payload: CreatePinPayload, thunkAPI) => {
+    try {
+      const { data } = await axios.post(
+        `${server}/plan/pin/${payload.planId}`,
+        payload
+      );
+      return data.pin;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const getPins = createAsyncThunk(
+  "plan/getPins",
+  async (planId: string, thunkAPI) => {
+    try {
+      const { data } = await axios.get(`${server}/plan/pin/${planId}`);
+      return data.pins;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);

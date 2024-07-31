@@ -13,7 +13,7 @@ const initialState: CompanyState = {
   error: null,
 };
 
-const companyReducer = createReducer(initialState, (builder) => {
+export const companyReducer = createReducer(initialState, (builder) => {
   builder
     .addCase(companyRegister.pending, (state) => {
       state.loading = true;
@@ -38,5 +38,3 @@ const companyReducer = createReducer(initialState, (builder) => {
       state.error = action.payload as string;
     });
 });
-
-export default companyReducer;
