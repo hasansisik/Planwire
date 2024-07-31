@@ -20,6 +20,13 @@ import {
 import { LayoutGrid, Pencil, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getProjects } from "@/redux/actions/projectActions";
+import { RootState } from "@/redux/store";
+
+const getCompanyId = () => {
+  return localStorage.getItem("companyId");
+};
 
 interface Project {
   id: string;
@@ -29,50 +36,15 @@ interface Project {
 }
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const dispatch = useDispatch();
+  const projects = useSelector((state: RootState) => state.projects.projects);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const plans: Project[] = [
-          {
-            id: "item-1",
-            projectName: "Planwire Projesi",
-            projectCode: "PW-001",
-            logo: "",
-          },
-          {
-            id: "item-2",
-            projectName: "Planwire Projesi",
-            projectCode: "PW-001",
-            logo: "",
-          },
-          {
-            id: "item-3",
-            projectName: "Planwire Projesi",
-            projectCode: "PW-001",
-            logo: "",
-          },
-          {
-            id: "item-4",
-            projectName: "Planwire Projesi",
-            projectCode: "PW-001",
-            logo: "",
-          },
-          {
-            id: "item-5",
-            projectName: "Planwire Projesi",
-            projectCode: "PW-001",
-            logo: "",
-          },
-        ];
-        setProjects(plans);
-      } catch (error) {
-        console.error("Hata:", error);
-      }
-    };
-    fetchProjects();
-  }, []);
+    const companyId = getCompanyId();
+    if (companyId) {
+      dispatch(getProjects(companyId));
+    }
+  }, [dispatch]);
 
   return (
     <div>
@@ -125,7 +97,7 @@ export default function Projects() {
         </div>
       </div>
       <div className="cards-container">
-        {projects.map((project) => (
+        {projects.map((project: Project) => (
           <Card key={project.id} className="form-card">
             <CardHeader>
               <CardTitle className="text-base">{project.projectName}</CardTitle>
