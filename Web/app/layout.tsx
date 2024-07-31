@@ -1,17 +1,14 @@
-import type { Metadata } from "next";
+"use client";
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "./globals.css";
+import { Provider } from "react-redux";
+import store from "../redux/store";
 
-const poppins = Poppins({ 
-  subsets: ["latin"], 
-  weight: ["100","200","300","400", "500", "600", "700"]
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
 });
-
-export const metadata: Metadata = {
-  title: "Planwire",
-  description: "Şantiye Yönetim Sistemi",
-};
 
 export default function RootLayout({
   children,
@@ -20,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(poppins.className,"light")}>{children}</body>
+      <body className={cn(poppins.className, "light")}>
+        <Provider store={store}>{children}</Provider>
+      </body>
     </html>
   );
 }
