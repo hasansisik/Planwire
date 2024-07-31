@@ -1,8 +1,10 @@
 require("dotenv").config();
 require("express-async-errors");
 //express
+const cors = require("cors");
 const express = require("express");
 const app = express();
+app.use(cors());
 
 // rest of the packages
 const morgan = require("morgan");
@@ -42,7 +44,7 @@ app.use("/v1/search", searchRouter);
 app.use(notFoundMiddleware);
 app.use(erorHandlerMiddleware);
 
-const port = process.env.PORT || 3040;
+const port = process.env.PORT || 3050;
 
 const start = async () => {
   await connectDB(process.env.MONGO_URL);

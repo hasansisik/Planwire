@@ -1,4 +1,4 @@
-
+// CompanyPage.tsx
 "use client";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,27 +25,37 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
+import { companyLogin, LoginPayload } from "@/redux/actions/companyActions";
+import { useAppDispatch } from "@/redux/hook";
 
 const formSchema = z.object({
-  code: z.string(),
-  password: z
-    .string()
-    .min(8, "Şifre en az 8 karakter olmalıdır")
+  CompanyCode: z.string().nonempty("Şirket kodu gerekli"),
+  password: z.string().nonempty("Şifre gerekli"),
 });
 
 export default function CompanyPage() {
+  const dispatch = useAppDispatch(); // useDispatch yerine useAppDispatch
   const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      code: "",
+      CompanyCode: "",
       password: "",
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log("Şirket Girişi Başarılı!", data);
-    router.push("/welcome");
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const actionResult = await dispatch(companyLogin(data as LoginPayload));
+    if (companyLogin.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        router.push("/welcome");
+      } else {
+        console.error("Giriş Başarısız: Geçersiz yanıt formatı");
+      }
+    } else if (companyLogin.rejected.match(actionResult)) {
+      console.error("Giriş Başarısız:", actionResult.error.message);
+    }
   };
 
   return (
@@ -67,7 +77,7 @@ export default function CompanyPage() {
               {/* Company Code Input */}
               <FormField
                 control={form.control}
-                name="code"
+                name="CompanyCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Şirket Kodu</FormLabel>
