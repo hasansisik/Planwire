@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,10 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { LayoutGrid, Pencil, Plus, Search } from "lucide-react";
+import { LayoutGrid, Pencil, Plus } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import { RootState, AppDispatch } from "@/redux/store";
 import { getProjects } from "@/redux/actions/projectActions";
 
@@ -38,6 +40,7 @@ interface Project {
 export default function Projects() {
   const dispatch = useDispatch<AppDispatch>();
   const projects = useSelector((state: RootState) => state.projects.projects);
+  const router = useRouter();
 
   useEffect(() => {
     const companyId = getCompanyId();
@@ -45,6 +48,10 @@ export default function Projects() {
       dispatch(getProjects(companyId));
     }
   }, [dispatch]);
+
+  const handleCardClick = (projectId: string) => {
+    router.push(`/navigator/tasks/${projectId}`);
+  };
 
   return (
     <div>
@@ -98,7 +105,11 @@ export default function Projects() {
       </div>
       <div className="cards-container">
         {projects.map((project: Project) => (
-          <Card key={project._id} className="form-card">
+          <Card
+            key={project._id}
+            className="form-card"
+            onClick={() => handleCardClick(project._id)}
+          >
             <CardHeader>
               <CardTitle className="text-base">{project.projectName}</CardTitle>
               <CardDescription>{project.projectCode}</CardDescription>
