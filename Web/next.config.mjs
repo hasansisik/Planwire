@@ -1,10 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Özel yapılandırmalarınızı buraya ekleyin
   images: {
-    domains: ["i.ibb.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i.ibb.co",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: "/**",
+      },
+    ],
   },
   reactStrictMode: true,
+  swcMinify: true,
+  pageExtensions: ["tsx", "ts", "jsx", "js"],
 };
 
 export default nextConfig;
