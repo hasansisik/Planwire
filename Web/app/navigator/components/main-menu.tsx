@@ -11,8 +11,8 @@ export default function MainMenu({ className }: { className?: string }) {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    const projectId = url.pathname.split("/").pop();
-    setSelectedMenu(projectId);
+    const projectId: string | undefined = url.pathname.split("/").pop();
+    setSelectedMenu(projectId ?? null);
   }, []);
 
   const url = new URL(window.location.href);

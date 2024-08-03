@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -114,14 +113,15 @@ export default function Projects() {
               <CardTitle className="text-base">{project.projectName}</CardTitle>
               <CardDescription>{project.projectCode}</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="items-center">
               <Image
                 src={project.logo}
-                width="150"
-                height="70"
-                alt="Planwite"
-                style={{ width: "auto", height: "auto" }}
+                width={150}
+                height={150}
+                alt="Planwire"
+                layout="intrinsic"
                 priority
+                style={{ height: "150px" }}
               />
             </CardContent>
           </Card>
