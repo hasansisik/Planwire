@@ -1,20 +1,64 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { useEffect } from "react";
-import { loadUser } from "@/redux/actions/userActions";
+import { loadUser, editProfile } from "@/redux/actions/userActions";
 
 export default function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: RootState) => state.user.user);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    jobTitle: "",
+    address: "",
+    password: "",
+    confirmPassword: "",
+    phoneNumber: "",
+    email: "",
+    company: "", 
+  });
 
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
 
-  const user = useSelector((state: RootState) => state.user.user);
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        jobTitle: user.jobTitle || "",
+        address: user.address || "",
+        password: "",
+        confirmPassword: "",
+        phoneNumber: user.phoneNumber || "",
+        email: user.email || "",
+        company: user.company || "", 
+      });
+    }
+  }, [user]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    if (formData.password !== formData.confirmPassword) {
+      alert("Şifreler eşleşmiyor!");
+      return;
+    }
+    console.log(formData);
+    dispatch(editProfile(formData));
+  };
 
   return (
     <div>
@@ -25,7 +69,9 @@ export default function ProfilePage() {
             Profilinizi düzenleyebilir ve inceleyebilirsiniz.
           </p>
         </div>
-        <Button className="flex gap-2 text-xs">Kaydet</Button>
+        <Button className="flex gap-2 text-xs" onClick={handleSubmit}>
+          Kaydet
+        </Button>
       </div>
       {/* Profile */}
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
@@ -36,7 +82,10 @@ export default function ProfilePage() {
           </p>
         </div>
         <Input
-          placeholder={user.name || "Kullanıcı Adı"}
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Kullanıcı Adı"
           className="w-[300px]"
         />
       </div>
@@ -48,7 +97,10 @@ export default function ProfilePage() {
           </p>
         </div>
         <Input
-          placeholder={user.position || "İş Pozisyonu"}
+          name="jobTitle"
+          value={formData.jobTitle}
+          onChange={handleChange}
+          placeholder="İş Pozisyonu"
           className="w-[300px]"
         />
       </div>
@@ -59,7 +111,12 @@ export default function ProfilePage() {
             Adresinizi düzenleyebilir veya değiştirebilirsiniz.
           </p>
         </div>
-        <Textarea placeholder={user.address || "Adres Bilgileri"} />
+        <Textarea
+          name="address"
+          value={formData.address}
+          onChange={handleChange}
+          placeholder="Adres Bilgileri"
+        />
       </div>
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
         <div className="pb-5">
@@ -68,9 +125,19 @@ export default function ProfilePage() {
             Şifrenizi düzenleyebilir veya değiştirebilirsiniz.
           </p>
         </div>
-        <Input type="password" placeholder="Şifre" className="w-[300px]" />
         <Input
           type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Şifre"
+          className="w-[300px]"
+        />
+        <Input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
           placeholder="Şifre Tekrar"
           className="w-[300px]"
         />
@@ -83,7 +150,10 @@ export default function ProfilePage() {
           </p>
         </div>
         <Input
-          placeholder={user.phoneNumber || "Telefon Numarası"}
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+          placeholder="Telefon Numarası"
           className="w-[300px]"
         />
       </div>
@@ -95,7 +165,10 @@ export default function ProfilePage() {
           </p>
         </div>
         <Input
-          placeholder={user.email || "Mail Adresi"}
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="Mail Adresi"
           className="w-[300px]"
         />
       </div>

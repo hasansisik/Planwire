@@ -27,7 +27,14 @@ interface ResetPasswordPayload {
 }
 
 interface EditProfilePayload {
-  // Define the structure of userData here
+  name: string;
+  email: string;
+  password: string;
+  address?: string;
+  jobTitle?: string;
+  company: string; 
+  phoneNumber?: string;
+  picture?: string;
 }
 
 export const register = createAsyncThunk(
@@ -155,7 +162,7 @@ export const resetPassword = createAsyncThunk(
 
 export const editProfile = createAsyncThunk(
   "user/editProfile",
-  async (userData: EditProfilePayload, thunkAPI) => {
+  async (formData: EditProfilePayload, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       const config = {
@@ -164,9 +171,10 @@ export const editProfile = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      await axios.post(`${server}/auth/edit-profile`, userData, config);
+      await axios.post(`${server}/auth/edit-profile`, formData, config);
       return;
     } catch (error: any) {
+      console.log(error);
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
           ? error.response.data.message
