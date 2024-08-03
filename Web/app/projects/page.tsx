@@ -50,7 +50,7 @@ export default function Projects() {
   }, [dispatch]);
 
   const handleCardClick = (projectId: string) => {
-    router.push(`/navigator/tasks/${projectId}`);
+    router.push(`/navigator/task/${projectId}`);
   };
 
   return (

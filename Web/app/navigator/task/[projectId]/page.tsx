@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { getTasks } from "@/redux/actions/taskActions";
 import AvatarGroup from "@/components/ui/avatar-group";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,56 +28,61 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface Task {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  assignee: string;
-  avatars: string[];
+  _id: string;
+  taskTitle: string;
+  taskCategory: string;
+  createdAt: string;
+  updatedAt: string;
+  taskCreator: {
+    _id: string;
+    name: string;
+    email: string;
+    picture: string;
+  };
+  project: string;
+  plan: {
+    _id: string;
+    planName: string;
+    planCode: string;
+    planImages: string;
+  };
+  persons: Array<{
+    _id: string;
+    name: string;
+    picture: string;
+  }>;
+  messages: Array<any>;
+  number: number;
+  __v: number;
+}
+
+interface AvatarGroupProps {
+  persons: Array<{
+    _id: string;
+    name: string;
+    picture: string;
+  }>;
 }
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      const tasks: Task[] = [
-        {
-          id: 1,
-          title: "Malzeme Eksikliği",
-          description: "Asansör kuyusuna beton döküldü",
-          date: "29.07.2024",
-          location: "DA-A-1K",
-          assignee: "Nedim Yeşilçınar",
-          avatars: [
-            "/user.jpg",
-            "/user.jpg",
-            "/user.jpg",
-            "/user.jpg",
-            "/user.jpg",
-          ],
-        },
-        {
-          id: 2,
-          title: "Elektrik Sorunu",
-          description: "Elektrik panosunda arıza tespit edildi",
-          date: "30.07.2024",
-          location: "DA-B-2L",
-          assignee: "Ayşe Yılmaz",
-          avatars: ["/user.jpg", "/user.jpg"],
-        },
-      ];
-      setTasks(tasks);
-    };
-    fetchTasks();
-  }, []);
+    const url = new URL(window.location.href);
+    const projectId = url.pathname.split("/").pop();
+    console.log(projectId);
+    if (projectId) {
+      dispatch(getTasks(projectId));
+    }
+  }, [dispatch]);
 
   return (
     <div>
       <div className="pb-5">
         <h4>Görevler</h4>
         <p className="text-muted-foreground font-normal text-sm">
-          Görevleri buradan inceleyebilir, Ekleyebilir ve arama yapabilirsiniz.
+          Görevleri buradan inceleyebilir, ekleyebilir ve arama yapabilirsiniz.
         </p>
       </div>
       <div className="pb-5 flex flex-row justify-between gap-4">
@@ -106,36 +114,43 @@ export default function Tasks() {
         </Dialog>
       </div>
       <div className="cards-container">
-        {tasks.map((task) => (
-          <Link key={task.id} href={`/navigator/tasks/details`} className="task-card">
+        {tasks.map((task: Task) => (
+          <Link
+            key={task._id}
+            href={`/navigator/tasks/${task._id}/details`}
+            className="task-card"
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
                   <div className="flex-center gap-5 justify-between">
-                    <p className="text-sm font-normal">#{task.id}</p>
-                    <p className="text-sm font-normal">{task.title}</p>
+                    <p className="text-sm font-normal">#{task.number}</p>
+                    <p className="text-sm font-normal">{task.taskCategory}</p>
                     <div className="flex-center">
                       <Image
-                        src="/user.jpg"
+                        src={task.taskCreator.picture}
                         width="40"
                         height="40"
                         style={{ borderRadius: "50%" }}
-                        alt="Planwire"
+                        alt={task.taskCreator.name}
                       />
-                      <p className="text-sm font-normal">{task.assignee}</p>
+                      <p className="text-sm font-normal">
+                        {task.taskCreator.name}
+                      </p>
                     </div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <h6>{task.description}</h6>
+                <h6>{task.taskTitle}</h6>
               </CardContent>
               <CardFooter className="flex-center gap-5 justify-between">
-                <p className="text-sm font-normal">{task.date}</p>
-                <h6 className="text-sm">{task.location}</h6>
-                <div className="flex-center justify-between">
-                  <AvatarGroup avatars={task.avatars} />
-                </div>
+                <p className="text-sm font-normal">
+                  {new Date(task.createdAt).toLocaleDateString()}
+                </p>
+                <h6 className="text-sm">{task.plan.planCode}</h6>
+                <div className="flex-center justify-between"></div>
+                <AvatarGroup persons={task.persons} />
               </CardFooter>
             </Card>
           </Link>
