@@ -32,7 +32,6 @@ interface Task {
   taskTitle: string;
   taskCategory: string;
   createdAt: string;
-  updatedAt: string;
   taskCreator: {
     _id: string;
     name: string;
@@ -53,15 +52,6 @@ interface Task {
   }>;
   messages: Array<any>;
   number: number;
-  __v: number;
-}
-
-interface AvatarGroupProps {
-  persons: Array<{
-    _id: string;
-    name: string;
-    picture: string;
-  }>;
 }
 
 export default function Tasks() {
@@ -124,8 +114,10 @@ export default function Tasks() {
               <CardHeader>
                 <CardTitle className="text-base">
                   <div className="flex-center gap-5 justify-between">
-                    <p className="text-sm font-normal">#{task.number}</p>
-                    <p className="text-sm font-normal">{task.taskCategory}</p>
+                    <div className="flex-center">
+                      <p className="text-sm font-normal">#{task.number}</p>
+                      <p className="text-sm font-normal">{task.taskCategory}</p>
+                    </div>
                     <div className="flex-center">
                       <Image
                         src={task.taskCreator.picture}

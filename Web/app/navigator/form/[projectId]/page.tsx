@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,37 +19,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { getForms } from "@/redux/actions/formActions";
 
 interface Form {
-  id: number;
+  _id: string;
   formCategory: string;
   formTitle: string;
   date: string;
-  formCreator: string;
-  formPerson: string;
+  formCreator: {
+    _id: string;
+    name: string;
+    picture: string;
+  };
+  formPerson: {
+    _id: string;
+    name: string;
+    picture: string;
+  };
+  number: number;
+  createdAt: string;
 }
 
 export default function Forms() {
-  const [forms, setForms] = useState<Form[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const forms = useSelector((state: RootState) => state.forms.forms);
+  console.log("forms",forms);
 
   useEffect(() => {
-    const fetchForms = async () => {
-      const forms: Form[] = [
-        {
-          id: 1,
-          formCategory: "Finans",
-          formTitle: "Bütçe Raporu",
-          date: "29.07.2024",
-          formCreator: "Ahmet Yılmaz",
-          formPerson: "Mehmet Demir",
-        },
-      ];
-      setForms(forms);
-    };
-
-    fetchForms();
-  }, []);
+    const url = new URL(window.location.href);
+    const projectId = url.pathname.split("/").pop();
+    console.log(projectId);
+    if (projectId) {
+      dispatch(getForms(projectId));
+    }
+  }, [dispatch]);
 
   return (
     <div>
@@ -90,16 +95,18 @@ export default function Forms() {
         </Dialog>
       </div>
       <div className="cards-container">
-        {forms.map((form) => (
-          <Card key={form.id} className="form-card">
+        {forms.map((form: Form) => (
+          <Card key={form._id} className="form-card">
             <CardHeader>
               <CardTitle className="text-base">
                 <div className="flex-center gap-5 justify-between">
                   <div className="flex-center">
-                    <p className="text-sm font-normal">#{form.id}</p>
+                    <p className="text-sm font-normal">#{form.number}</p>
                     <p className="text-sm font-normal">{form.formCategory}</p>
                   </div>
-                  <p className="text-sm font-normal">{form.date}</p>
+                  <p className="text-sm font-normal">
+                    {new Date(form.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -109,7 +116,7 @@ export default function Forms() {
             <CardFooter className="flex-center gap-5 justify-between">
               <div className="flex-center">
                 <Image
-                  src="/user.jpg"
+                  src={form.formCreator.picture}
                   width="40"
                   height="40"
                   style={{ borderRadius: "50%" }}
@@ -117,12 +124,12 @@ export default function Forms() {
                 />
                 <div>
                   <p className="text-xs font-normal">Oluşturan :</p>
-                  <p className="text-sm font-bold">{form.formCreator}</p>
+                  <p className="text-sm font-bold">{form.formCreator.name}</p>
                 </div>
               </div>
               <div className="flex-center">
                 <Image
-                  src="/user.jpg"
+                  src={form.formPerson.picture}
                   width="40"
                   height="40"
                   style={{ borderRadius: "50%" }}
@@ -130,7 +137,7 @@ export default function Forms() {
                 />
                 <div>
                   <p className="text-xs font-normal">İmzalayan :</p>
-                  <p className="text-sm font-bold">{form.formPerson}</p>
+                  <p className="text-sm font-bold">{form.formPerson.name}</p>
                 </div>
               </div>
             </CardFooter>

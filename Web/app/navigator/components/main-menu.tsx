@@ -6,6 +6,8 @@ import { LightDarkToggle } from "@/components/ui/light-dark-toggle";
 import { cn } from "@/lib/utils";
 
 export default function MainMenu({ className }: { className?: string }) {
+  const url = new URL(window.location.href);
+  const projectId = url.pathname.split("/").pop();
   return (
     <nav
       className={cn(
@@ -19,16 +21,16 @@ export default function MainMenu({ className }: { className?: string }) {
         </Link>
       </header>
       <ul className="flex flex-col py-4 px-2 gap-3 grow">
-        <MenuItem href="/navigator" icon="LayoutPanelLeft">
+        <MenuItem href={`/navigator/plan/${projectId}`} icon="LayoutPanelLeft">
           Planlar
         </MenuItem>
-        <MenuItem href="/navigator/tasks" icon="LayoutList">
+        <MenuItem href={`/navigator/task/${projectId}`} icon="LayoutList">
           Görevler
         </MenuItem>
-        <MenuItem href="/navigator/forms" icon="File">
+        <MenuItem href={`/navigator/form/${projectId}`} icon="File">
           Formlar
         </MenuItem>
-        <MenuItem href="/navigator/file" icon="FolderOpen">
+        <MenuItem href={`/navigator/file/${projectId}`} icon="FolderOpen">
           Dosyalar
         </MenuItem>
       </ul>
