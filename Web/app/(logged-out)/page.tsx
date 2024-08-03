@@ -57,7 +57,7 @@ export default function CompanyPage() {
       console.error("Giriş Başarısız:", actionResult.error.message);
     }
   };
-
+  
   return (
     <>
       <PersonStandingIcon size={50} />

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MenuItem from "./menu-item";
 import MenuTitle from "./menu-title";
@@ -6,8 +7,17 @@ import { LightDarkToggle } from "@/components/ui/light-dark-toggle";
 import { cn } from "@/lib/utils";
 
 export default function MainMenu({ className }: { className?: string }) {
+  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const projectId = url.pathname.split("/").pop();
+    setSelectedMenu(projectId);
+  }, []);
+
   const url = new URL(window.location.href);
   const projectId = url.pathname.split("/").pop();
+
   return (
     <nav
       className={cn(
@@ -21,16 +31,32 @@ export default function MainMenu({ className }: { className?: string }) {
         </Link>
       </header>
       <ul className="flex flex-col py-4 px-2 gap-3 grow">
-        <MenuItem href={`/navigator/plan/${projectId}`} icon="LayoutPanelLeft">
+        <MenuItem
+          href={`/navigator/plan/${projectId}`}
+          icon="LayoutPanelLeft"
+          className={selectedMenu === projectId ? "selected" : ""}
+        >
           Planlar
         </MenuItem>
-        <MenuItem href={`/navigator/task/${projectId}`} icon="LayoutList">
+        <MenuItem
+          href={`/navigator/task/${projectId}`}
+          icon="LayoutList"
+          className={selectedMenu === projectId ? "selected" : ""}
+        >
           Görevler
         </MenuItem>
-        <MenuItem href={`/navigator/form/${projectId}`} icon="File">
+        <MenuItem
+          href={`/navigator/form/${projectId}`}
+          icon="File"
+          className={selectedMenu === projectId ? "selected" : ""}
+        >
           Formlar
         </MenuItem>
-        <MenuItem href={`/navigator/file/${projectId}`} icon="FolderOpen">
+        <MenuItem
+          href={`/navigator/file/${projectId}`}
+          icon="FolderOpen"
+          className={selectedMenu === projectId ? "selected" : ""}
+        >
           Dosyalar
         </MenuItem>
       </ul>
