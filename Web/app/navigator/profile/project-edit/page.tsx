@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,8 +12,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { useEffect } from "react";
+import { getProjects } from "@/redux/actions/projectActions";
+import { Project } from "@/redux/reducers/projectReducer";
+
+const getCompanyId = () => {
+  return localStorage.getItem("companyId");
+};
 
 export default function ProjectPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  useEffect(() => {
+    const companyId = getCompanyId();
+    if (companyId) {
+      dispatch(getProjects(companyId));
+    }
+  }, [dispatch]);
+
+  const projects = useSelector((state: RootState) => state.projects.projects);
+
+  const handleSelectChange = (projectId: string) => {
+    const project = projects.find((p) => p._id === projectId);
+    if (project) {
+      setSelectedProject(project);
+    }
+  };
+
   return (
     <div>
       <div className="pb-5 flex flex-row justify-between gap-4">
@@ -30,15 +60,18 @@ export default function ProjectPage() {
             Projeyi düzenlemek için Seçin.
           </p>
         </div>
-        <Select>
+        <Select onValueChange={handleSelectChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Lütfen Proje Seçin" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Projeler</SelectLabel>
-              <SelectItem value="santiye1">İstanbul Şantiye</SelectItem>
-              <SelectItem value="santiye2">Ankara Şantiye</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project._id} value={project._id}>
+                  {project.projectName}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -51,7 +84,12 @@ export default function ProjectPage() {
             Proje adını düzenleyebilir veya değiştirebilirsiniz.
           </p>
         </div>
-        <Input placeholder="Proje Adı" className="w-[300px]" />
+        <Input
+          placeholder={
+            selectedProject ? selectedProject.projectName : "Proje Adı"
+          }
+          className="w-[300px]"
+        />
       </div>
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
         <div className="pb-5">
@@ -60,7 +98,12 @@ export default function ProjectPage() {
             Proje Kodunu düzenleyebilir veya değiştirebilirsiniz.
           </p>
         </div>
-        <Input placeholder="Proje Kodu" className="w-[300px]" />
+        <Input
+          placeholder={
+            selectedProject ? selectedProject.projectCode : "Proje Kodu"
+          }
+          className="w-[300px]"
+        />
       </div>
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
         <div className="pb-5">
@@ -69,7 +112,11 @@ export default function ProjectPage() {
             Adresinizi düzenleyebilir veya değiştirebilirsiniz.
           </p>
         </div>
-        <Textarea placeholder="Adres Bilgileri" />
+        <Textarea
+          placeholder={
+            selectedProject ? selectedProject.address : "Adres Bilgileri"
+          }
+        />
       </div>
     </div>
   );

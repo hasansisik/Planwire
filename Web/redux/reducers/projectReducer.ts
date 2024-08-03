@@ -7,9 +7,17 @@ import {
   deleteProject,
 } from "../actions/projectActions";
 
-interface ProjectState {
-  projects: any[];
-  project: any;
+export interface Project {
+  _id: string;
+  projectName: string;
+  projectCode: string;
+  address: string;
+  logo: string;
+}
+
+ interface ProjectState {
+  projects: Project[];
+  project: Project | null;
   loading: boolean;
   error: string | null;
   message: string | null;
@@ -17,7 +25,7 @@ interface ProjectState {
 
 const initialState: ProjectState = {
   projects: [],
-  project: {},
+  project: null, 
   loading: false,
   error: null,
   message: null,
