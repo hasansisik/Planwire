@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { server } from "../../config";
+import { server } from "@/config";
 
 interface RegisterPayload {
   name: string;
@@ -65,7 +65,6 @@ export const loadUser = createAsyncThunk(
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        withCredentials: true,
       });
       return data.user;
     } catch (error: any) {
@@ -73,7 +72,6 @@ export const loadUser = createAsyncThunk(
     }
   }
 );
-
 export const logout = createAsyncThunk("user/logout", async (_, thunkAPI) => {
   try {
     const token = localStorage.getItem("accessToken");
