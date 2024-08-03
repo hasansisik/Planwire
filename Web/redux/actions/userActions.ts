@@ -26,7 +26,7 @@ interface ResetPasswordPayload {
   newPassword: string;
 }
 
-interface EditProfilePayload {
+export interface EditProfilePayload {
   name: string;
   email: string;
   password: string;
@@ -174,7 +174,6 @@ export const editProfile = createAsyncThunk(
       await axios.post(`${server}/auth/edit-profile`, formData, config);
       return;
     } catch (error: any) {
-      console.log(error);
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
           ? error.response.data.message

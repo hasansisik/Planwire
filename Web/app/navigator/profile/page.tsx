@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { loadUser, editProfile } from "@/redux/actions/userActions";
+import { loadUser, editProfile, EditProfilePayload } from "@/redux/actions/userActions";
 
 export default function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,7 +19,7 @@ export default function ProfilePage() {
     confirmPassword: "",
     phoneNumber: "",
     email: "",
-    company: "", 
+    company: "",
   });
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function ProfilePage() {
         confirmPassword: "",
         phoneNumber: user.phoneNumber || "",
         email: user.email || "",
-        company: user.company || "", 
+        company: user.company || "",
       });
     }
   }, [user]);
@@ -51,14 +51,24 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleSubmit = () => {
-    if (formData.password !== formData.confirmPassword) {
-      alert("Şifreler eşleşmiyor!");
-      return;
+const handleSubmit = () => {
+  if (formData.password !== formData.confirmPassword) {
+    alert("Şifreler eşleşmiyor!");
+    return;
+  }
+
+  const updatedData = Object.keys(formData).reduce((acc, key) => {
+    if (formData[key as keyof typeof formData]) {
+      acc[key as keyof EditProfilePayload] = formData[
+        key as keyof typeof formData
+      ] as string;
     }
-    console.log(formData);
-    dispatch(editProfile(formData));
-  };
+    return acc;
+  }, {} as EditProfilePayload);
+
+  console.log(updatedData);
+  dispatch(editProfile(updatedData));
+};
 
   return (
     <div>
@@ -83,9 +93,8 @@ export default function ProfilePage() {
         </div>
         <Input
           name="name"
-          value={formData.name}
           onChange={handleChange}
-          placeholder="Kullanıcı Adı"
+          placeholder={formData.name}
           className="w-[300px]"
         />
       </div>
@@ -98,9 +107,8 @@ export default function ProfilePage() {
         </div>
         <Input
           name="jobTitle"
-          value={formData.jobTitle}
           onChange={handleChange}
-          placeholder="İş Pozisyonu"
+          placeholder={formData.jobTitle}
           className="w-[300px]"
         />
       </div>
@@ -113,9 +121,8 @@ export default function ProfilePage() {
         </div>
         <Textarea
           name="address"
-          value={formData.address}
           onChange={handleChange}
-          placeholder="Adres Bilgileri"
+          placeholder={formData.address}
         />
       </div>
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
@@ -151,9 +158,8 @@ export default function ProfilePage() {
         </div>
         <Input
           name="phoneNumber"
-          value={formData.phoneNumber}
           onChange={handleChange}
-          placeholder="Telefon Numarası"
+          placeholder={formData.phoneNumber}
           className="w-[300px]"
         />
       </div>
@@ -166,9 +172,8 @@ export default function ProfilePage() {
         </div>
         <Input
           name="email"
-          value={formData.email}
           onChange={handleChange}
-          placeholder="Mail Adresi"
+          placeholder={formData.email}
           className="w-[300px]"
         />
       </div>
