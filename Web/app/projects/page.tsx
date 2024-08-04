@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { LayoutGrid, Pencil, Plus } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -43,35 +43,38 @@ import {
 import { Input } from "@/components/ui/input";
 import * as z from "zod";
 import { useToast } from "@/components/ui/use-toast";
+import { Project } from "@/redux/reducers/projectReducer";
+import { storage } from "@/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; 
+
+const uploadLogoToFirebase = async (file: File): Promise<string> => {
+  const storageRef = ref(storage, `PlanwireProject/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const downloadURL = await getDownloadURL(storageRef);
+  return downloadURL;
+};
 
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
 };
 
-interface Project {
-  _id: string;
-  projectName: string;
-  projectCode: string;
-  logo: string;
-}
+const formSchema = z.object({
+  projectName: z.string().nonempty("Proje ismi zorunludur"),
+  projectCode: z.string().nonempty("Proje kodu zorunludur"),
+  logo: z.any().optional(),
+});
 
 export default function Projects() {
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const projects = useSelector((state: RootState) => state.projects.projects);
 
-  const formSchema = z.object({
-    projectName: z.string().nonempty("Proje ismi zorunludur"),
-    projectCode: z.string().nonempty("Proje kodu zorunludur"),
-    logo: z.string().optional(),
-  });
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: "",
       projectCode: "",
-      logo: "",
+      logo: null,
     },
   });
 
@@ -84,7 +87,6 @@ export default function Projects() {
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const companyId = getCompanyId();
-
     if (!companyId) {
       toast({
         title: "Hata",
@@ -93,11 +95,17 @@ export default function Projects() {
       return;
     }
 
-    const payload: CreateProjectPayload = { ...data, companyId };
-
-    if (!payload.logo) {
-      delete payload.logo;
+    let logoURL = "";
+    if (data.logo && data.logo[0]) {
+      const logoFile = data.logo[0] as unknown as File;
+      logoURL = await uploadLogoToFirebase(logoFile);
     }
+
+    const payload: CreateProjectPayload = {
+      ...data,
+      companyId,
+      logo: logoURL || undefined,
+    };
 
     const actionResult = await dispatch(createProject(payload));
     if (createProject.fulfilled.match(actionResult)) {
@@ -120,7 +128,6 @@ export default function Projects() {
       toast({
         title: "Giriş Başarısız",
         description: actionResult.payload as React.ReactNode,
-        variant: "destructive",
       });
     }
   };
@@ -193,8 +200,7 @@ export default function Projects() {
                           <FormControl>
                             <Input
                               type="file"
-                              placeholder="IST001"
-                              {...field}
+                              onChange={(e) => field.onChange(e.target.files)}
                             />
                           </FormControl>
                           <FormDescription>
