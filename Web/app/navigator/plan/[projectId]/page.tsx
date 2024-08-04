@@ -52,19 +52,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { storage } from "@/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-interface Plan {
-  _id: string;
-  planName: string;
-  planCode: string;
-  planCategory: string;
-  planImages: string;
-  createdAt: string;
-  updatedAt: string;
-  project: string;
-  pins: any[];
-  __v: number;
-}
-
 const uploadPlanToFirebase = async (file: File): Promise<string> => {
   const storageRef = ref(storage, `PlanwirePlan/${file.name}`);
   await uploadBytes(storageRef, file);
@@ -113,7 +100,7 @@ export default function Plans() {
     }
     const payload: CreatePlanPayload = {
       ...data,
-      planImages: logoURL ? logoURL : "", // planImages alanını dize olarak gönder
+      planImages: logoURL ? logoURL : "",
       projectId: projectId || "",
     };
     const actionResult = await dispatch(createPlan(payload));
@@ -136,7 +123,7 @@ export default function Plans() {
     } else if (createPlan.rejected.match(actionResult)) {
       toast({
         title: "Giriş Başarısız",
-        description: actionResult.payload || "Bilinmeyen bir hata oluştu.",
+        description: actionResult.payload as React.ReactNode,
         variant: "destructive",
       });
     }
