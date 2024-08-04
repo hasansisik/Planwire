@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,17 +14,24 @@ import {
 } from "@/components/ui/select";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { useEffect } from "react";
-import { getProjects } from "@/redux/actions/projectActions";
+import { getProjects, updateProject } from "@/redux/actions/projectActions";
 import { Project } from "@/redux/reducers/projectReducer";
+import { useToast } from "@/components/ui/use-toast";
 
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
 };
 
 export default function ProjectPage() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [formData, setFormData] = useState({
+    projectName: "",
+    projectCode: "",
+    address: "",
+    logo: "",
+  });
 
   useEffect(() => {
     const companyId = getCompanyId();
@@ -39,6 +46,45 @@ export default function ProjectPage() {
     const project = projects.find((p) => p._id === projectId);
     if (project) {
       setSelectedProject(project);
+      setFormData({
+        projectName: project.projectName,
+        projectCode: project.projectCode,
+        address: project.address,
+        logo: project.logo,
+      });
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedProject) return;
+
+    const updatedData = {
+      ...formData,
+      projectId: selectedProject._id,
+    };
+
+    const actionResult = await dispatch(updateProject(updatedData));
+    if (updateProject.fulfilled.match(actionResult)) {
+      toast({
+        title: "Başarılı",
+        description: "Proje başarıyla güncellendi.",
+      });
+    } else if (updateProject.rejected.match(actionResult)) {
+      toast({
+        title: "Hata",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
     }
   };
 
@@ -51,7 +97,9 @@ export default function ProjectPage() {
             Projenizi düzenleyebilir ve inceleyebilirsiniz.
           </p>
         </div>
-        <Button className="flex gap-2 text-xs">Kaydet</Button>
+        <Button className="flex gap-2 text-xs" onClick={handleSubmit}>
+          Kaydet
+        </Button>
       </div>
       <div className="grid grid-cols-3 gap-4 py-5 border-b">
         <div className="pb-5">
@@ -85,9 +133,9 @@ export default function ProjectPage() {
           </p>
         </div>
         <Input
-          placeholder={
-            selectedProject ? selectedProject.projectName : "Proje Adı"
-          }
+          name="projectName"
+          onChange={handleChange}
+          placeholder={formData.projectName}
           className="w-[300px]"
         />
       </div>
@@ -99,9 +147,9 @@ export default function ProjectPage() {
           </p>
         </div>
         <Input
-          placeholder={
-            selectedProject ? selectedProject.projectCode : "Proje Kodu"
-          }
+          name="projectCode"
+          onChange={handleChange}
+          placeholder={formData.projectCode}
           className="w-[300px]"
         />
       </div>
@@ -113,9 +161,9 @@ export default function ProjectPage() {
           </p>
         </div>
         <Textarea
-          placeholder={
-            selectedProject ? selectedProject.address : "Adres Bilgileri"
-          }
+          name="address"
+          onChange={handleChange}
+          placeholder={formData.address}
         />
       </div>
     </div>
