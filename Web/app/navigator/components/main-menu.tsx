@@ -8,15 +8,14 @@ import { cn } from "@/lib/utils";
 
 export default function MainMenu({ className }: { className?: string }) {
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    const projectId: string | undefined = url.pathname.split("/").pop();
+    const projectId = url.pathname.split("/").pop();
     setSelectedMenu(projectId ?? null);
+    setProjectId(projectId ?? null);
   }, []);
-
-  const url = new URL(window.location.href);
-  const projectId = url.pathname.split("/").pop();
 
   return (
     <nav
