@@ -17,20 +17,40 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogClose,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { GalleryVerticalEnd, Plus, Search } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getPlans } from "@/redux/actions/planActions";
+import {
+  createPlan,
+  CreatePlanPayload,
+  getPlans,
+} from "@/redux/actions/planActions";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { storage } from "@/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface Plan {
   _id: string;
@@ -45,10 +65,34 @@ interface Plan {
   __v: number;
 }
 
+const uploadPlanToFirebase = async (file: File): Promise<string> => {
+  const storageRef = ref(storage, `PlanwirePlan/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const downloadURL = await getDownloadURL(storageRef);
+  return downloadURL;
+};
+
+const formSchema = z.object({
+  planName: z.string().nonempty("Plan ismi zorunludur"),
+  planCode: z.string().nonempty("Plan kodu zorunludur"),
+  planCategory: z.string().nonempty("Plan kategori zorunludur"),
+  planImages: z.any().optional(),
+});
+
 export default function Plans() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const plans = useSelector((state: RootState) => state.plans.plans);
-  console.log(plans);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      planName: "",
+      planCode: "",
+      planCategory: "",
+      planImages: undefined,
+    },
+  });
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -58,6 +102,45 @@ export default function Plans() {
       dispatch(getPlans(projectId));
     }
   }, [dispatch]);
+
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const url = new URL(window.location.href);
+    const projectId = url.pathname.split("/").pop();
+    let logoURL = "";
+    if (data.planImages && data.planImages[0]) {
+      const logoFile = data.planImages[0] as unknown as File;
+      logoURL = await uploadPlanToFirebase(logoFile);
+    }
+    const payload: CreatePlanPayload = {
+      ...data,
+      planImages: logoURL ? logoURL : "", // planImages alanını dize olarak gönder
+      projectId: projectId || "",
+    };
+    const actionResult = await dispatch(createPlan(payload));
+    if (createPlan.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        toast({
+          title: "Proje Oluşturuldu",
+          description: "Başarıyla proje oluşturuldu.",
+        });
+        if (projectId) {
+          dispatch(getPlans(projectId));
+        }
+      } else {
+        toast({
+          title: "Proje Oluşturulamadı",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (createPlan.rejected.match(actionResult)) {
+      toast({
+        title: "Giriş Başarısız",
+        description: actionResult.payload || "Bilinmeyen bir hata oluştu.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Accordion type="multiple" className="w-full">
@@ -89,10 +172,90 @@ export default function Plans() {
                 Plan eklemek için gerekli bilgileri giriniz.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4"></div>
-            <DialogFooter>
-              <Button type="submit">Plan Ekle</Button>
-            </DialogFooter>
+            <div className="grid gap-4 py-4">
+              <Form {...form}>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                >
+                  {/* planName Input */}
+                  <FormField
+                    control={form.control}
+                    name="planName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plan İsmi</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Plan Adı" {...field} />
+                        </FormControl>
+                        <FormDescription>Plan İsmini Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* planCode Input */}
+                  <FormField
+                    control={form.control}
+                    name="planCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plan Kodu</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Plan Kodu" {...field} />
+                        </FormControl>
+                        <FormDescription>Plan Kodunu Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* planCategory Input */}
+                  <FormField
+                    control={form.control}
+                    name="planCategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plan Kategori</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Plan Kategori" {...field} />
+                        </FormControl>
+                        <FormDescription>Plan Kategori Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* planImages Input */}
+                  <FormField
+                    control={form.control}
+                    name="planImages"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plan Görseli</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files.length > 0) {
+                                field.onChange(files); // Dosya nesnesini gönder
+                              } else {
+                                field.onChange(undefined); // Boş değer gönder
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>Plan Görseli Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="submit">Proje Ekle</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

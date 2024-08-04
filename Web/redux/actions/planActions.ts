@@ -2,12 +2,12 @@ import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { server } from "../../config";
 
-interface CreatePlanPayload {
-  projectId: string;
-  planCategory: string;
-  planCode: string;
-  planName: string;
+export interface CreatePlanPayload {
   planImages: string[];
+  planName: string;
+  planCode: string;
+  planCategory: string;
+  projectId: string;
 }
 
 interface UpdatePlanPayload {
@@ -22,12 +22,17 @@ export const createPlan = createAsyncThunk(
   "plan/create",
   async (payload: CreatePlanPayload, thunkAPI) => {
     try {
+      console.log(payload);
       const { data } = await axios.post(
         `${server}/plan/${payload.projectId}`,
         payload
       );
       return data.plan;
     } catch (error: any) {
+      console.error("Error details:", error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error response status:", error.response?.status);
+      console.error("Error response headers:", error.response?.headers);
       return thunkAPI.rejectWithValue(error.response.data.message);
     }
   }

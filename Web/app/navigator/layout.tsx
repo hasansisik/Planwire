@@ -6,6 +6,7 @@ import MenuTitle from "./components/menu-title";
 import { MenuIcon } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function DashboardLayout({
   children,
@@ -37,6 +38,7 @@ export default function DashboardLayout({
       )}
       <div className="overflow-auto px-10 py-5">
         {children}
+        <Toaster />
       </div>
     </div>
   );
