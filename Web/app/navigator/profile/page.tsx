@@ -5,9 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { loadUser, editProfile, EditProfilePayload } from "@/redux/actions/userActions";
+import {
+  loadUser,
+  editProfile,
+  EditProfilePayload,
+} from "@/redux/actions/userActions";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ProfilePage() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user.user);
 
@@ -51,24 +57,52 @@ export default function ProfilePage() {
     }));
   };
 
-const handleSubmit = () => {
-  if (formData.password !== formData.confirmPassword) {
-    alert("Şifreler eşleşmiyor!");
-    return;
-  }
-
-  const updatedData = Object.keys(formData).reduce((acc, key) => {
-    if (formData[key as keyof typeof formData]) {
-      acc[key as keyof EditProfilePayload] = formData[
-        key as keyof typeof formData
-      ] as string;
+  const handleSubmit = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Şifreler eşleşmiyor!",
+        description: "Lütfen şifrelerinizi kontrol edin.",
+        variant: "destructive",
+      });
+      return;
     }
-    return acc;
-  }, {} as EditProfilePayload);
 
-  console.log(updatedData);
-  dispatch(editProfile(updatedData));
-};
+    const updatedData = Object.keys(formData).reduce((acc, key) => {
+      if (formData[key as keyof typeof formData]) {
+        acc[key as keyof EditProfilePayload] = formData[
+          key as keyof typeof formData
+        ] as string;
+      }
+      return acc;
+    }, {} as EditProfilePayload);
+
+    const actionResult = await dispatch(editProfile(updatedData));
+    if (actionResult.meta.requestStatus === "fulfilled") {
+      const payload = actionResult.payload as {
+        status?: number;
+        error?: { message: string };
+      };
+      if (payload.status === 200) {
+        toast({
+          title: "Başarılı",
+          description: "Profiliniz başarıyla güncellendi.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Hata",
+          description: payload.error?.message || "Bilinmeyen bir hata oluştu.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Hata",
+        description: "İstek başarısız oldu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div>

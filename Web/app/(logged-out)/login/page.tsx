@@ -27,6 +27,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hook";
 import { login, LoginPayload } from "@/redux/actions/userActions";
+import { useToast } from "@/components/ui/use-toast";
 
 // localStorage'dan companyId'yi almak için fonksiyon
 const getCompanyId = () => {
@@ -35,33 +36,46 @@ const getCompanyId = () => {
 
 const formSchema = z.object({
   email: z.string().email(),
-  password: z
-    .string()
-    .min(8, "Şifre en az 8 karakter olmalıdır")
+  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır"),
 });
 
 export default function LoginPage() {
+  const { toast } = useToast();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: ""
+      password: "",
     },
   });
 
    const handleSubmit = async (data: z.infer<typeof formSchema>) => {
      const companyId = getCompanyId();
-     const actionResult = await dispatch(login({ ...data, companyId } as LoginPayload));
+     const actionResult = await dispatch(
+       login({ ...data, companyId } as LoginPayload)
+     );
      if (login.fulfilled.match(actionResult)) {
        if (actionResult.payload) {
+         toast({
+           title: "Giriş Başarılı",
+           description: "Başarıyla giriş yaptınız.",
+         });
          router.push("/projects");
        } else {
-         console.error("Giriş Başarısız: Geçersiz yanıt formatı");
+         toast({
+           title: "Giriş Başarısız",
+           description: "Geçersiz yanıt formatı.",
+           variant: "destructive",
+         });
        }
      } else if (login.rejected.match(actionResult)) {
-       console.error("Giriş Başarısız:", actionResult.error.message);
+       toast({
+         title: "Giriş Başarısız",
+         description: actionResult.payload as React.ReactNode,
+         variant: "destructive",
+       });
      }
    };
 
@@ -71,7 +85,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Giriş Yap</CardTitle>
-          <CardDescription>Giriş yapmak için bilgileri doldurun.</CardDescription>
+          <CardDescription>
+            Giriş yapmak için bilgileri doldurun.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

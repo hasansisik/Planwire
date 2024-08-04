@@ -1,5 +1,6 @@
 "use client";
 import MainMenu from "./components/main-menu";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function ProfileLayout({
   children,
@@ -11,6 +12,7 @@ export default function ProfileLayout({
       <MainMenu className="hidden md:flex" />
       <div className="overflow-auto px-10 py-5">
         {children}
+        <Toaster />
       </div>
     </div>
   );
