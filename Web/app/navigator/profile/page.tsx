@@ -76,28 +76,23 @@ export default function ProfilePage() {
     }, {} as EditProfilePayload);
 
     const actionResult = await dispatch(editProfile(updatedData));
-    if (actionResult.meta.requestStatus === "fulfilled") {
-      const payload = actionResult.payload as {
-        status?: number;
-        error?: { message: string };
-      };
-      if (payload.status === 200) {
+    if (editProfile.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
         toast({
           title: "Başarılı",
           description: "Profiliniz başarıyla güncellendi.",
-          variant: "default",
         });
       } else {
         toast({
           title: "Hata",
-          description: payload.error?.message || "Bilinmeyen bir hata oluştu.",
+          description: "Geçersiz yanıt formatı.",
           variant: "destructive",
         });
       }
-    } else {
+    } else if (editProfile.rejected.match(actionResult)) {
       toast({
         title: "Hata",
-        description: "İstek başarısız oldu. Lütfen tekrar deneyin.",
+        description: actionResult.payload as React.ReactNode,
         variant: "destructive",
       });
     }

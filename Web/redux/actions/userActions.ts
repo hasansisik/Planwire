@@ -171,8 +171,12 @@ export const editProfile = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      await axios.post(`${server}/auth/edit-profile`, formData, config);
-      return;
+      const response = await axios.post(
+        `${server}/auth/edit-profile`,
+        formData,
+        config
+      );
+      return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
