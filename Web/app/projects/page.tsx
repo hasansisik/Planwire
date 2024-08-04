@@ -84,9 +84,22 @@ export default function Projects() {
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const companyId = getCompanyId();
-    const actionResult = await dispatch(
-      createProject({ ...data, companyId } as CreateProjectPayload)
-    );
+
+    if (!companyId) {
+      toast({
+        title: "Hata",
+        description: "Şirket ID'si bulunamadı.",
+      });
+      return;
+    }
+
+    const payload: CreateProjectPayload = { ...data, companyId };
+
+    if (!payload.logo) {
+      delete payload.logo;
+    }
+
+    const actionResult = await dispatch(createProject(payload));
     if (createProject.fulfilled.match(actionResult)) {
       if (actionResult.payload) {
         toast({

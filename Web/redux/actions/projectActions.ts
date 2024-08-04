@@ -5,8 +5,7 @@ import { server } from "../../config";
 export interface CreateProjectPayload {
   projectName: string;
   projectCode: string;
-  address: string;
-  logo: string;
+  logo?: string; 
   companyId: string;
 }
 
