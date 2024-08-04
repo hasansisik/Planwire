@@ -50,33 +50,33 @@ export default function LoginPage() {
     },
   });
 
-   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-     const companyId = getCompanyId();
-     const actionResult = await dispatch(
-       login({ ...data, companyId } as LoginPayload)
-     );
-     if (login.fulfilled.match(actionResult)) {
-       if (actionResult.payload) {
-         toast({
-           title: "Giriş Başarılı",
-           description: "Başarıyla giriş yaptınız.",
-         });
-         router.push("/projects");
-       } else {
-         toast({
-           title: "Giriş Başarısız",
-           description: "Geçersiz yanıt formatı.",
-           variant: "destructive",
-         });
-       }
-     } else if (login.rejected.match(actionResult)) {
-       toast({
-         title: "Giriş Başarısız",
-         description: actionResult.payload as React.ReactNode,
-         variant: "destructive",
-       });
-     }
-   };
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const companyId = getCompanyId();
+    const actionResult = await dispatch(
+      login({ ...data, companyId } as LoginPayload)
+    );
+    if (login.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        toast({
+          title: "Giriş Başarılı",
+          description: "Başarıyla giriş yaptınız.",
+        });
+        router.push("/projects");
+      } else {
+        toast({
+          title: "Giriş Başarısız",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (login.rejected.match(actionResult)) {
+      toast({
+        title: "Giriş Başarısız",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>

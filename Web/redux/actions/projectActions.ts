@@ -2,7 +2,7 @@ import axios from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { server } from "../../config";
 
-interface CreateProjectPayload {
+export interface CreateProjectPayload {
   projectName: string;
   projectCode: string;
   address: string;

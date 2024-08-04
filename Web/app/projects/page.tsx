@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -21,10 +22,27 @@ import { LayoutGrid, Pencil, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getProjects } from "@/redux/actions/projectActions";
+import {
+  createProject,
+  CreateProjectPayload,
+  getProjects,
+} from "@/redux/actions/projectActions";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
 
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
@@ -38,9 +56,24 @@ interface Project {
 }
 
 export default function Projects() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const projects = useSelector((state: RootState) => state.projects.projects);
-  const router = useRouter();
+
+  const formSchema = z.object({
+    projectName: z.string().nonempty("Proje ismi zorunludur"),
+    projectCode: z.string().nonempty("Proje kodu zorunludur"),
+    logo: z.string().optional(),
+  });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      projectName: "",
+      projectCode: "",
+      logo: "",
+    },
+  });
 
   useEffect(() => {
     const companyId = getCompanyId();
@@ -49,8 +82,34 @@ export default function Projects() {
     }
   }, [dispatch]);
 
-  const handleCardClick = (projectId: string) => {
-    router.push(`/navigator/plan/${projectId}`);
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const companyId = getCompanyId();
+    const actionResult = await dispatch(
+      createProject({ ...data, companyId } as CreateProjectPayload)
+    );
+    if (createProject.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        toast({
+          title: "Proje Oluşturuldu",
+          description: "Başarıyla proje oluşturuldu.",
+        });
+        if (companyId) {
+          dispatch(getProjects(companyId));
+        }
+      } else {
+        toast({
+          title: "Proje Oluşturulamadı",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (createProject.rejected.match(actionResult)) {
+      toast({
+        title: "Giriş Başarısız",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -61,26 +120,6 @@ export default function Projects() {
           <h5>Projeler</h5>
         </div>
         <div className="flex-center">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="flex gap-2 text-xs">
-                <Pencil />
-                Proje Düzenle
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Proje Düzenle</DialogTitle>
-                <DialogDescription>
-                  Proje düzenlemek için gerekli bilgileri giriniz.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4"></div>
-              <DialogFooter>
-                <Button type="submit">Proje Düzenle</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="flex gap-2 text-xs">
@@ -95,10 +134,71 @@ export default function Projects() {
                   Proje eklemek için gerekli bilgileri giriniz.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4"></div>
-              <DialogFooter>
-                <Button type="submit">Proje Ekle</Button>
-              </DialogFooter>
+              <div className="grid gap-4 py-4">
+                <Form {...form}>
+                  <form
+                    className="flex flex-col gap-4"
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                  >
+                    {/* projectName Input */}
+                    <FormField
+                      control={form.control}
+                      name="projectName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Proje İsmi</FormLabel>
+                          <FormControl>
+                            <Input placeholder="İstanbul Şantiye" {...field} />
+                          </FormControl>
+                          <FormDescription>Proje İsmini Girin</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* projectCode Input */}
+                    <FormField
+                      control={form.control}
+                      name="projectCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Proje Kodu</FormLabel>
+                          <FormControl>
+                            <Input placeholder="IST001" {...field} />
+                          </FormControl>
+                          <FormDescription>Proje Kodunu Girin</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Logo Input */}
+                    <FormField
+                      control={form.control}
+                      name="logo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Proje Logosu</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              placeholder="IST001"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Proje Logosunu Girin
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="submit">Proje Ekle</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </div>
             </DialogContent>
           </Dialog>
         </div>
@@ -123,8 +223,8 @@ export default function Projects() {
                   alt="Planwire"
                   layout="responsive"
                   objectFit="cover"
-                  width={150} 
-                  height={150} 
+                  width={150}
+                  height={150}
                   priority
                 />
               </CardContent>
