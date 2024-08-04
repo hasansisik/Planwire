@@ -29,7 +29,6 @@ import { useAppDispatch } from "@/redux/hook";
 import { login, LoginPayload } from "@/redux/actions/userActions";
 import { useToast } from "@/components/ui/use-toast";
 
-// localStorage'dan companyId'yi almak için fonksiyon
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
 };

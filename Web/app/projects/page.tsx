@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { LayoutGrid, Pencil, Plus } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -104,27 +105,31 @@ export default function Projects() {
       </div>
       <div className="cards-container">
         {projects.map((project: Project) => (
-          <Card
+          <Link
+            href={`/navigator/plan/${project._id}`}
             key={project._id}
             className="form-card"
-            onClick={() => handleCardClick(project._id)}
           >
-            <CardHeader>
-              <CardTitle className="text-base">{project.projectName}</CardTitle>
-              <CardDescription>{project.projectCode}</CardDescription>
-            </CardHeader>
-            <CardContent className="items-center">
-              <Image
-                src={project.logo}
-                width={150}
-                height={150}
-                alt="Planwire"
-                layout="intrinsic"
-                priority
-                style={{ height: "150px" }}
-              />
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {project.projectName}
+                </CardTitle>
+                <CardDescription>{project.projectCode}</CardDescription>
+              </CardHeader>
+              <CardContent className="items-center w-[150px] h-[150px]">
+                <Image
+                  src={project.logo}
+                  alt="Planwire"
+                  layout="responsive"
+                  objectFit="cover"
+                  width={150} 
+                  height={150} 
+                  priority
+                />
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

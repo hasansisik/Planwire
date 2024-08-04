@@ -68,10 +68,9 @@ export default function ProfilePage() {
     }
 
     const updatedData = Object.keys(formData).reduce((acc, key) => {
-      if (formData[key as keyof typeof formData]) {
-        acc[key as keyof EditProfilePayload] = formData[
-          key as keyof typeof formData
-        ] as string;
+      const value = formData[key as keyof typeof formData];
+      if (value && value !== user[key as keyof typeof user]) {
+        acc[key as keyof EditProfilePayload] = value as string;
       }
       return acc;
     }, {} as EditProfilePayload);

@@ -27,6 +27,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
 import { companyLogin, LoginPayload } from "@/redux/actions/companyActions";
 import { useAppDispatch } from "@/redux/hook";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   CompanyCode: z.string().nonempty("Şirket kodu gerekli"),
@@ -34,7 +35,8 @@ const formSchema = z.object({
 });
 
 export default function CompanyPage() {
-  const dispatch = useAppDispatch(); 
+  const { toast } = useToast();
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,15 +51,27 @@ export default function CompanyPage() {
     const actionResult = await dispatch(companyLogin(data as LoginPayload));
     if (companyLogin.fulfilled.match(actionResult)) {
       if (actionResult.payload) {
+        toast({
+          title: "Giriş Başarılı",
+          description: "Başarıyla giriş yaptınız.",
+        });
         router.push("/welcome");
       } else {
-        console.error("Giriş Başarısız: Geçersiz yanıt formatı");
+        toast({
+          title: "Giriş Başarısız",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
       }
     } else if (companyLogin.rejected.match(actionResult)) {
-      console.error("Giriş Başarısız:", actionResult.error.message);
+      toast({
+        title: "Giriş Başarısız",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
     }
   };
-  
+
   return (
     <>
       <PersonStandingIcon size={50} />
