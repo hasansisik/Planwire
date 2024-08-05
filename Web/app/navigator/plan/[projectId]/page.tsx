@@ -1,5 +1,20 @@
-"use client";
-
+"use client"
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import {
+  createPlan,
+  CreatePlanPayload,
+  getPlans,
+} from "@/redux/actions/planActions";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { storage } from "@/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import axios from "axios";
+import { server } from "@/config";
 import {
   Accordion,
   AccordionContent,
@@ -36,21 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { GalleryVerticalEnd, Plus, Search } from "lucide-react";
 import Image from "next/image";
-import { useEffect } from "react";
 import Link from "next/link";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
-import {
-  createPlan,
-  CreatePlanPayload,
-  getPlans,
-} from "@/redux/actions/planActions";
-import * as z from "zod";
-import { useToast } from "@/components/ui/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { storage } from "@/config";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const uploadPlanToFirebase = async (file: File): Promise<string> => {
   const storageRef = ref(storage, `PlanwirePlan/${file.name}`);
@@ -66,11 +67,21 @@ const formSchema = z.object({
   planImages: z.any().optional(),
 });
 
+type Plan = {
+  _id: string;
+  planName: string;
+  planCode: string;
+  planCategory: string;
+  planImages: string;
+  updatedAt: string;
+};
+
 export default function Plans() {
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
-  const plans = useSelector((state: RootState) => state.plans.plans);
-
+  const [searchKey, setSearchKey] = useState("");
+  const [searchResults, setSearchResults] = useState<Plan[]>([]);
+  const plans = useSelector((state: RootState) => state.plans.plans) as Plan[];
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -88,6 +99,22 @@ export default function Plans() {
       dispatch(getPlans(projectId));
     }
   }, [dispatch]);
+
+  const handleSearch = async () => {
+    try {
+      let url = `${server}/search/plan/?`;
+      if (searchKey) {
+        url += `search=${searchKey}&`;
+      }
+      if (url[url.length - 1] === "&") {
+        url = url.slice(0, -1);
+      }
+      const response = await axios.get(url);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.log("Failed to get plans", error);
+    }
+  };
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const url = new URL(window.location.href);
@@ -139,8 +166,19 @@ export default function Plans() {
       </div>
       <div className="pb-5 flex flex-row justify-between gap-4">
         <div className="flex flex-row gap-5">
-          <Input className="w-[300px]" type="search" placeholder="Plan Ara" />
-          <Button>
+          <Input
+            className="w-[300px]"
+            type="search"
+            placeholder="Plan Ara"
+            value={searchKey}
+            onChange={(e) => setSearchKey(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+          <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
         </div>
@@ -164,7 +202,6 @@ export default function Plans() {
                   className="flex flex-col gap-4"
                   onSubmit={form.handleSubmit(handleSubmit)}
                 >
-                  {/* planName Input */}
                   <FormField
                     control={form.control}
                     name="planName"
@@ -179,7 +216,6 @@ export default function Plans() {
                       </FormItem>
                     )}
                   />
-                  {/* planCode Input */}
                   <FormField
                     control={form.control}
                     name="planCode"
@@ -194,7 +230,6 @@ export default function Plans() {
                       </FormItem>
                     )}
                   />
-                  {/* planCategory Input */}
                   <FormField
                     control={form.control}
                     name="planCategory"
@@ -209,7 +244,6 @@ export default function Plans() {
                       </FormItem>
                     )}
                   />
-                  {/* planImages Input */}
                   <FormField
                     control={form.control}
                     name="planImages"
@@ -245,41 +279,77 @@ export default function Plans() {
           </DialogContent>
         </Dialog>
       </div>
-      {plans.map((item) => (
-        <AccordionItem key={item._id} className="pb-3" value={item._id}>
-          <AccordionTrigger>
-            <div className="flex flex-row gap-2">
-              <GalleryVerticalEnd />
-              <p>{item.planCategory}</p>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="cards-container">
-            <Link href={`/navigator/plan`} className="plan-card">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    <div className="flex flex-row justify-between">
-                      <p>{item.planCode}</p>
-                      <p className="text-sm font-normal">
-                        {new Date(item.updatedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </CardTitle>
-                  <CardDescription>{item.planName}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Image
-                    src={item.planImages}
-                    width="175"
-                    height="100"
-                    alt="Planwire"
-                  />
-                </CardContent>
-              </Card>
-            </Link>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
+      {searchResults.length === 0
+        ? plans.map((item) => (
+            <AccordionItem key={item._id} className="pb-3" value={item._id}>
+              <AccordionTrigger>
+                <div className="flex flex-row gap-2">
+                  <GalleryVerticalEnd />
+                  <p>{item.planCategory}</p>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="cards-container">
+                <Link href={`/navigator/plan`} className="plan-card">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        <div className="flex flex-row justify-between">
+                          <p>{item.planCode}</p>
+                          <p className="text-sm font-normal">
+                            {new Date(item.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </CardTitle>
+                      <CardDescription>{item.planName}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Image
+                        src={item.planImages}
+                        width="175"
+                        height="100"
+                        alt="Planwire"
+                      />
+                    </CardContent>
+                  </Card>
+                </Link>
+              </AccordionContent>
+            </AccordionItem>
+          ))
+        : searchResults.map((item) => (
+            <AccordionItem key={item._id} className="pb-3" value={item._id}>
+              <AccordionTrigger>
+                <div className="flex flex-row gap-2">
+                  <GalleryVerticalEnd />
+                  <p>{item.planCategory}</p>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="cards-container">
+                <Link href={`/navigator/plan`} className="plan-card">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        <div className="flex flex-row justify-between">
+                          <p>{item.planCode}</p>
+                          <p className="text-sm font-normal">
+                            {new Date(item.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </CardTitle>
+                      <CardDescription>{item.planName}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Image
+                        src={item.planImages}
+                        width="175"
+                        height="100"
+                        alt="Planwire"
+                      />
+                    </CardContent>
+                  </Card>
+                </Link>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
     </Accordion>
   );
 }
