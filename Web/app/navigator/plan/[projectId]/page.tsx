@@ -116,6 +116,11 @@ export default function Plans() {
     }
   };
 
+  const handleClear = () => {
+    setSearchKey("");
+    setSearchResults([]);
+  };
+
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
@@ -178,6 +183,7 @@ export default function Plans() {
               }
             }}
           />
+          <Button onClick={handleClear}>Clear</Button>
           <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
