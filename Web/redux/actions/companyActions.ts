@@ -33,7 +33,6 @@ export const companyLogin = createAsyncThunk(
   async (payload: LoginPayload, thunkAPI) => {
     try {
       const { data } = await axios.post(`${server}/company/login`, payload);
-	  console.log(data);
       if (typeof window !== "undefined") {
         localStorage.setItem("companyId", data.company._id);
       }

@@ -46,12 +46,10 @@ interface Form {
 export default function Forms() {
   const dispatch = useDispatch<AppDispatch>();
   const forms = useSelector((state: RootState) => state.forms.forms);
-  console.log("forms",forms);
 
   useEffect(() => {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
-    console.log(projectId);
     if (projectId) {
       dispatch(getForms(projectId));
     }

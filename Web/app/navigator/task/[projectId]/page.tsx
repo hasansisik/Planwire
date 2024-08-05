@@ -16,16 +16,41 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogClose,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { getPlans } from "@/redux/actions/planActions";
+import { getAllUsers } from "@/redux/actions/userActions";
 
 interface Task {
   _id: string;
@@ -54,18 +79,46 @@ interface Task {
   number: number;
 }
 
+const getCompanyId = () => {
+  return localStorage.getItem("companyId");
+};
+
+const formSchema = z.object({
+  taskTitle: z.string().nonempty("Plan kodu zorunludur"),
+  taskCategory: z.string().nonempty("Plan kategori zorunludur"),
+  plan: z.any().optional(),
+  persons: z.any().optional(),
+});
+
 export default function Tasks() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const plans = useSelector((state: RootState) => state.plans.plans);
+  const {user,users} = useSelector((state: RootState) => state.user);
+  
+  const companyId = getCompanyId();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      taskTitle: "",
+      taskCategory: "",
+      plan: "",
+      persons: "",
+    },
+  });
 
   useEffect(() => {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
-    console.log(projectId);
     if (projectId) {
       dispatch(getTasks(projectId));
+      dispatch(getPlans(projectId));
     }
   }, [dispatch]);
+
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {};
 
   return (
     <div>
@@ -96,10 +149,108 @@ export default function Tasks() {
                 Görev eklemek için gerekli bilgileri giriniz.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4"></div>
-            <DialogFooter>
-              <Button type="submit">Plan Ekle</Button>
-            </DialogFooter>
+            <div className="grid gap-4 py-4">
+              <Form {...form}>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                >
+                  {/* taskTitle Input */}
+                  <FormField
+                    control={form.control}
+                    name="taskTitle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Görev İsmi</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Görev Başlığı" {...field} />
+                        </FormControl>
+                        <FormDescription>Görev Başlığı Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* taskCategory Input */}
+                  <FormField
+                    control={form.control}
+                    name="taskCategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Görev Kategorisi</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Görev Kategorisi" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Görev Kategorisi Girin
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* PlanSelect Input */}
+                  <FormField
+                    control={form.control}
+                    name="plan"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plan Seç</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Plan Seç" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {plans.map((plan) => (
+                                <SelectItem key={plan._id} value={plan._id}>
+                                  {plan.planName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Persons Input */}
+                  <FormField
+                    control={form.control}
+                    name="persons"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Kişi Seç</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kişi Seç" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {users.map((user) => (
+                                <SelectItem key={user._id} value={user._id}>
+                                  {user.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="submit">Proje Ekle</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

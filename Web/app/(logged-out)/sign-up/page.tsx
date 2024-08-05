@@ -105,7 +105,6 @@ export default function SignupPage() {
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log("Giriş Başarılı!", data);
     router.push("/projects");
   };
 

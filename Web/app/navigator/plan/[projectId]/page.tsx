@@ -84,7 +84,6 @@ export default function Plans() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
-    console.log(projectId);
     if (projectId) {
       dispatch(getPlans(projectId));
     }
