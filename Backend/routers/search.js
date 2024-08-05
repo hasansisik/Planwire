@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchPlan,searchTask } = require('../controllers/search');
+const { searchPlan,searchTask, searchForm } = require('../controllers/search');
 
 const router = express.Router();
 
@@ -8,5 +8,8 @@ router.route("/plan")
 
 router.route("/task")
     .get(searchTask)
+
+router.route("/form")
+    .get(searchForm)
 
 module.exports = router;

@@ -38,15 +38,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { createForm, CreateFormPayload, getForms } from "@/redux/actions/formActions";
+import {
+  createForm,
+  CreateFormPayload,
+  getForms,
+} from "@/redux/actions/formActions";
 import * as z from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getAllUsers } from "@/redux/actions/userActions";
+import axios from "axios";
+import { server } from "@/config";
 
 interface Form {
   _id: string;
@@ -88,6 +94,9 @@ export default function Forms() {
   const forms = useSelector((state: RootState) => state.forms.forms);
   const { user, users } = useSelector((state: RootState) => state.user);
 
+  const [searchKey, setSearchKey] = useState("");
+  const [searchResults, setSearchResults] = useState<Form[]>([]);
+
   const companyId = getCompanyId();
 
   useEffect(() => {
@@ -97,6 +106,34 @@ export default function Forms() {
       console.error("Company ID is null");
     }
   }, [companyId, dispatch]);
+
+  const handleSearch = async () => {
+    try {
+      const url = new URL(window.location.href);
+      const projectId = url.pathname.split("/").pop();
+      let searchUrl = `${server}/search/form/?`;
+
+      if (searchKey) {
+        searchUrl += `search=${searchKey}&`;
+      }
+      if (projectId) {
+        searchUrl += `projectId=${projectId}&`;
+      }
+      if (searchUrl[searchUrl.length - 1] === "&") {
+        searchUrl = searchUrl.slice(0, -1);
+      }
+
+      const response = await axios.get(searchUrl);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.log("Failed to get plans", error);
+    }
+  };
+
+  const handleClear = () => {
+    setSearchKey("");
+    setSearchResults([]);
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -119,14 +156,14 @@ export default function Forms() {
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const projectId = new URL(window.location.href).pathname.split("/").pop();
     if (projectId) {
-    const payload: CreateFormPayload = {
-      projectId,
-      formCategory: data.formCategory,
-      formTitle: data.formTitle,
-      formDescription: data.formDescription,
-      formCreator: user._id,
-      formPerson: data.formPerson,
-    };
+      const payload: CreateFormPayload = {
+        projectId,
+        formCategory: data.formCategory,
+        formTitle: data.formTitle,
+        formDescription: data.formDescription,
+        formCreator: user._id,
+        formPerson: data.formPerson,
+      };
 
       const actionResult = await dispatch(createForm(payload));
       if (createForm.fulfilled.match(actionResult)) {
@@ -166,8 +203,20 @@ export default function Forms() {
       </div>
       <div className="pb-5 flex flex-row justify-between gap-4">
         <div className="flex flex-row gap-5">
-          <Input className="w-[300px]" type="search" placeholder="Form Ara" />
-          <Button>
+          <Input
+            className="w-[300px]"
+            type="search"
+            placeholder="Form Ara"
+            value={searchKey}
+            onChange={(e) => setSearchKey(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+          <Button variant="outline" onClick={handleClear}>Temizle</Button>
+          <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
         </div>
@@ -278,54 +327,115 @@ export default function Forms() {
         </Dialog>
       </div>
       <div className="cards-container">
-        {forms.map((form: Form) => (
-          <Card key={form._id} className="form-card">
-            <CardHeader>
-              <CardTitle className="text-base">
-                <div className="flex-center gap-5 justify-between">
+        {searchResults.length === 0
+          ? forms.map((form: Form) => (
+              <Card key={form._id} className="form-card">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    <div className="flex-center gap-5 justify-between">
+                      <div className="flex-center">
+                        <p className="text-sm font-normal">#{form.number}</p>
+                        <p className="text-sm font-normal">
+                          {form.formCategory}
+                        </p>
+                      </div>
+                      <p className="text-sm font-normal">
+                        {new Date(form.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <h6>{form.formTitle}</h6>
+                </CardContent>
+                <CardFooter className="flex-center gap-5 justify-between">
                   <div className="flex-center">
-                    <p className="text-sm font-normal">#{form.number}</p>
-                    <p className="text-sm font-normal">{form.formCategory}</p>
+                    <Image
+                      src={form.formCreator.picture}
+                      width="40"
+                      height="40"
+                      style={{ borderRadius: "50%" }}
+                      alt="Planwire"
+                    />
+                    <div>
+                      <p className="text-xs font-normal">Oluşturan :</p>
+                      <p className="text-sm font-bold">
+                        {form.formCreator.name}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm font-normal">
-                    {new Date(form.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <h6>{form.formTitle}</h6>
-            </CardContent>
-            <CardFooter className="flex-center gap-5 justify-between">
-              <div className="flex-center">
-                <Image
-                  src={form.formCreator.picture}
-                  width="40"
-                  height="40"
-                  style={{ borderRadius: "50%" }}
-                  alt="Planwire"
-                />
-                <div>
-                  <p className="text-xs font-normal">Oluşturan :</p>
-                  <p className="text-sm font-bold">{form.formCreator.name}</p>
-                </div>
-              </div>
-              <div className="flex-center">
-                <Image
-                  src={form.formPerson.picture}
-                  width="40"
-                  height="40"
-                  style={{ borderRadius: "50%" }}
-                  alt="Planwire"
-                />
-                <div>
-                  <p className="text-xs font-normal">İmzalayan :</p>
-                  <p className="text-sm font-bold">{form.formPerson.name}</p>
-                </div>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+                  <div className="flex-center">
+                    <Image
+                      src={form.formPerson.picture}
+                      width="40"
+                      height="40"
+                      style={{ borderRadius: "50%" }}
+                      alt="Planwire"
+                    />
+                    <div>
+                      <p className="text-xs font-normal">İmzalayan :</p>
+                      <p className="text-sm font-bold">
+                        {form.formPerson.name}
+                      </p>
+                    </div>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))
+          : searchResults.map((form: Form) => (
+              <Card key={form._id} className="form-card">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    <div className="flex-center gap-5 justify-between">
+                      <div className="flex-center">
+                        <p className="text-sm font-normal">#{form.number}</p>
+                        <p className="text-sm font-normal">
+                          {form.formCategory}
+                        </p>
+                      </div>
+                      <p className="text-sm font-normal">
+                        {new Date(form.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <h6>{form.formTitle}</h6>
+                </CardContent>
+                <CardFooter className="flex-center gap-5 justify-between">
+                  <div className="flex-center">
+                    <Image
+                      src={form.formCreator.picture}
+                      width="40"
+                      height="40"
+                      style={{ borderRadius: "50%" }}
+                      alt="Planwire"
+                    />
+                    <div>
+                      <p className="text-xs font-normal">Oluşturan :</p>
+                      <p className="text-sm font-bold">
+                        {form.formCreator.name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-center">
+                    <Image
+                      src={form.formPerson.picture}
+                      width="40"
+                      height="40"
+                      style={{ borderRadius: "50%" }}
+                      alt="Planwire"
+                    />
+                    <div>
+                      <p className="text-xs font-normal">İmzalayan :</p>
+                      <p className="text-sm font-bold">
+                        {form.formPerson.name}
+                      </p>
+                    </div>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
       </div>
     </div>
   );

@@ -13,8 +13,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { storage } from "@/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import axios from "axios";
-import { server } from "@/config";
 import {
   Accordion,
   AccordionContent,
@@ -52,6 +50,8 @@ import { Input } from "@/components/ui/input";
 import { GalleryVerticalEnd, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
+import { server } from "@/config";
 
 const uploadPlanToFirebase = async (file: File): Promise<string> => {
   const storageRef = ref(storage, `PlanwirePlan/${file.name}`);
@@ -192,7 +192,9 @@ export default function Plans() {
               }
             }}
           />
-          <Button onClick={handleClear}>Clear</Button>
+          <Button variant="outline" onClick={handleClear}>
+            Temizle
+          </Button>
           <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
@@ -271,9 +273,9 @@ export default function Plans() {
                             onChange={(e) => {
                               const files = e.target.files;
                               if (files && files.length > 0) {
-                                field.onChange(files); 
+                                field.onChange(files);
                               } else {
-                                field.onChange(undefined); 
+                                field.onChange(undefined);
                               }
                             }}
                           />

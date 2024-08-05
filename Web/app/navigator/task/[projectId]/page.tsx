@@ -223,7 +223,9 @@ export default function Tasks() {
               }
             }}
           />
-          <Button onClick={handleClear}>Clear</Button>
+          <Button variant="outline" onClick={handleClear}>
+            Temizle
+          </Button>
           <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
