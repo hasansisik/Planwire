@@ -15,7 +15,7 @@ const searchPlanService = async (keyword, projectId) => {
   return plans;
 };
 
-const searchTaskService = async (keyword, me) => {
+const searchTaskService = async (keyword, projectId) => {
   const query = {
     $or: [
       { taskTitle: { $regex: keyword, $options: "i" } },
@@ -26,8 +26,8 @@ const searchTaskService = async (keyword, me) => {
 
   const tasks = await Task.find(query)
     .populate("persons")
-    .populate("taskCreator") 
-    .populate("plan"); 
+    .populate("taskCreator")
+    .populate("plan");
   return tasks;
 };
 

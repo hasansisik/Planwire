@@ -224,7 +224,7 @@ export default function Tasks() {
             }}
           />
           <Button onClick={handleClear}>Clear</Button>
-          <Button>
+          <Button onClick={handleSearch}>
             <Search size={20} />
           </Button>
         </div>
