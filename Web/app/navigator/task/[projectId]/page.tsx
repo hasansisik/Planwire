@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getTasks } from "@/redux/actions/taskActions";
+import { createTask, getTasks } from "@/redux/actions/taskActions";
 import AvatarGroup from "@/components/ui/avatar-group";
 import { Button } from "@/components/ui/button";
 import {
@@ -126,8 +126,42 @@ export default function Tasks() {
     }
   }, [dispatch]);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {};
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const url = new URL(window.location.href);
+    const projectId = url.pathname.split("/").pop();
 
+    const payload = {
+      ...data,
+      projectId: projectId || "",
+      taskCreator: user._id, // Assuming `user` is available in the component's scope
+    };
+
+    const actionResult = await dispatch(createTask(payload));
+
+    if (createTask.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        toast({
+          title: "Görev Oluşturuldu",
+          description: "Başarıyla görev oluşturuldu.",
+        });
+        if (projectId) {
+          dispatch(getTasks(projectId));
+        }
+      } else {
+        toast({
+          title: "Görev Oluşturulamadı",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (createTask.rejected.match(actionResult)) {
+      toast({
+        title: "Görev Oluşturma Başarısız",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <div>
       <div className="pb-5">

@@ -41,7 +41,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getForms } from "@/redux/actions/formActions";
+import { createForm, getForms } from "@/redux/actions/formActions";
 import * as z from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "react-hook-form";
@@ -113,8 +113,37 @@ export default function Forms() {
     }
   }, [dispatch]);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {};
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const projectId = new URL(window.location.href).pathname.split("/").pop();
+    if (projectId) {
+      const payload = {
+        projectId,
+        formCategory: data.formCategory,
+        formTitle: data.formTitle,
+        formDescription: data.formDescription,
+        formCreator: user._id,
+        formPerson: data.formPerson,
+      };
 
+      try {
+        await dispatch(createForm(payload));
+        toast({
+          title: "Başarılı",
+          description: "Form başarıyla oluşturuldu.",
+        });
+      } catch (error) {
+        toast({
+          title: "Hata",
+          description: "Form oluşturulurken bir hata oluştu.",
+        });
+      }
+    } else {
+      toast({
+        title: "Hata",
+        description: "Proje ID'si bulunamadı.",
+      });
+    }
+  };
   return (
     <div>
       <div className="pb-5">

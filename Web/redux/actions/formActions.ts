@@ -21,6 +21,7 @@ export const createForm = createAsyncThunk(
   "form/create",
   async (payload: FormPayload, thunkAPI) => {
     try {
+      console.log(payload);
       const response = await axios.post(`${server}/form/${payload.projectId}`, {
         formCategory: payload.formCategory,
         formTitle: payload.formTitle,
@@ -30,6 +31,9 @@ export const createForm = createAsyncThunk(
       });
       return response.data;
     } catch (error: any) {
+      console.log(error.response.data.error);
+      console.log(error.response.data.message);
+      console.log(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data.error);
     }
   }
