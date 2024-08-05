@@ -102,14 +102,21 @@ export default function Plans() {
 
   const handleSearch = async () => {
     try {
-      let url = `${server}/search/plan/?`;
+      const url = new URL(window.location.href);
+      const projectId = url.pathname.split("/").pop();
+      let searchUrl = `${server}/search/plan/?`;
+
       if (searchKey) {
-        url += `search=${searchKey}&`;
+        searchUrl += `search=${searchKey}&`;
       }
-      if (url[url.length - 1] === "&") {
-        url = url.slice(0, -1);
+      if (projectId) {
+        searchUrl += `projectId=${projectId}&`;
       }
-      const response = await axios.get(url);
+      if (searchUrl[searchUrl.length - 1] === "&") {
+        searchUrl = searchUrl.slice(0, -1);
+      }
+
+      const response = await axios.get(searchUrl);
       setSearchResults(response.data);
     } catch (error) {
       console.log("Failed to get plans", error);

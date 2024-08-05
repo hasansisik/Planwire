@@ -7,11 +7,13 @@ const {
 const searchPlan = async (req, res, next) => {
   try {
     const keyword = req.query.search || "";
+    const projectId = req.query.projectId; // Proje ID'sini alın
 
-    if (!keyword) {
+    if (!keyword || !projectId) {
       throw createHttpError.BadRequest("Arama parametreleri eksik.");
     }
-    const plans = await searchPlanService(keyword);
+
+    const plans = await searchPlanService(keyword, projectId);
     res.status(200).json(plans);
   } catch (error) {
     console.error(error);
