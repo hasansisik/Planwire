@@ -81,7 +81,9 @@ export default function Plans() {
   const dispatch = useDispatch<AppDispatch>();
   const [searchKey, setSearchKey] = useState("");
   const [searchResults, setSearchResults] = useState<Plan[]>([]);
+
   const plans = useSelector((state: RootState) => state.plans.plans) as Plan[];
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -269,9 +271,9 @@ export default function Plans() {
                             onChange={(e) => {
                               const files = e.target.files;
                               if (files && files.length > 0) {
-                                field.onChange(files); // Dosya nesnesini gönder
+                                field.onChange(files); 
                               } else {
-                                field.onChange(undefined); // Boş değer gönder
+                                field.onChange(undefined); 
                               }
                             }}
                           />

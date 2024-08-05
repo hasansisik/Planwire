@@ -8,7 +8,7 @@ const searchPlanService = async (keyword, projectId) => {
       { planCode: { $regex: keyword, $options: "i" } },
       { category: { $regex: keyword, $options: "i" } },
     ],
-    project: projectId, // Proje ID'sine göre filtreleme
+    project: projectId,
   };
 
   const plans = await Plan.find(query);
@@ -19,9 +19,9 @@ const searchTaskService = async (keyword, me) => {
   const query = {
     $or: [
       { taskTitle: { $regex: keyword, $options: "i" } },
-      { taskCategory: { $regex: keyword, $options: "i" } }
+      { taskCategory: { $regex: keyword, $options: "i" } },
     ],
-    ...me,
+    project: projectId,
   };
 
   const tasks = await Task.find(query)

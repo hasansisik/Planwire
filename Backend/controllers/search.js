@@ -7,7 +7,7 @@ const {
 const searchPlan = async (req, res, next) => {
   try {
     const keyword = req.query.search || "";
-    const projectId = req.query.projectId; // Proje ID'sini alın
+    const projectId = req.query.projectId; 
 
     if (!keyword || !projectId) {
       throw createHttpError.BadRequest("Arama parametreleri eksik.");
@@ -24,20 +24,13 @@ const searchPlan = async (req, res, next) => {
 const searchTask = async (req, res, next) => {
   try {
     const keyword = req.query.search || "";
-    let me = {};
+    const projectId = req.query.projectId; 
 
-    if (req.query.me) {
-      const meList = req.query.me.split(",");
-      for (let persons of meList) {
-        me[`persons.${persons}`] = true;
-      }
-    }
-
-    if (!keyword && !req.query.me) {
+    if (!keyword || !projectId) {
       throw createHttpError.BadRequest("Arama parametreleri eksik.");
     }
 
-    const tasks = await searchTaskService(keyword,me);
+    const tasks = await searchTaskService(keyword, projectId);
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);

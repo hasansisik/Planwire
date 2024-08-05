@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import {
@@ -55,6 +55,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getPlans } from "@/redux/actions/planActions";
 import { getAllUsers } from "@/redux/actions/userActions";
+import axios from "axios";
+import { server } from "@/config";
 
 interface Task {
   _id: string;
@@ -97,6 +99,9 @@ const formSchema = z.object({
 export default function Tasks() {
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+  const [searchKey, setSearchKey] = useState("");
+  const [searchResults, setSearchResults] = useState<Task[]>([]);
+
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
   const plans = useSelector((state: RootState) => state.plans.plans);
   const { user, users } = useSelector((state: RootState) => state.user);
@@ -130,6 +135,34 @@ export default function Tasks() {
     }
   }, [dispatch]);
 
+  const handleSearch = async () => {
+    try {
+      const url = new URL(window.location.href);
+      const projectId = url.pathname.split("/").pop();
+      let searchUrl = `${server}/search/task/?`;
+
+      if (searchKey) {
+        searchUrl += `search=${searchKey}&`;
+      }
+      if (projectId) {
+        searchUrl += `projectId=${projectId}&`;
+      }
+      if (searchUrl[searchUrl.length - 1] === "&") {
+        searchUrl = searchUrl.slice(0, -1);
+      }
+
+      const response = await axios.get(searchUrl);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.log("Failed to get plans", error);
+    }
+  };
+
+  const handleClear = () => {
+    setSearchKey("");
+    setSearchResults([]);
+  };
+
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
@@ -137,9 +170,9 @@ export default function Tasks() {
     const payload: CreateTaskPayload = {
       ...data,
       projectId: projectId || "",
-      taskCreator: user._id, // Assuming `user` is available in the component's scope
-      persons: data.persons, // persons özelliğini mutlaka ekliyoruz
-      plan: data.plan || null, // plan özelliğini mutlaka ekliyoruz
+      taskCreator: user._id,
+      persons: data.persons,
+      plan: data.plan || null,
     };
 
     const actionResult = await dispatch(createTask(payload));
@@ -178,7 +211,19 @@ export default function Tasks() {
       </div>
       <div className="pb-5 flex flex-row justify-between gap-4">
         <div className="flex flex-row gap-5">
-          <Input className="w-[300px]" type="search" placeholder="Görev Ara" />
+          <Input
+            className="w-[300px]"
+            type="search"
+            placeholder="Görev Ara"
+            value={searchKey}
+            onChange={(e) => setSearchKey(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+          <Button onClick={handleClear}>Clear</Button>
           <Button>
             <Search size={20} />
           </Button>
@@ -303,49 +348,97 @@ export default function Tasks() {
         </Dialog>
       </div>
       <div className="cards-container">
-        {tasks.map((task: Task) => (
-          <Link
-            key={task._id}
-            href={`/navigator/tasks/${task._id}/details`}
-            className="task-card"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  <div className="flex-center gap-5 justify-between">
-                    <div className="flex-center">
-                      <p className="text-sm font-normal">#{task.number}</p>
-                      <p className="text-sm font-normal">{task.taskCategory}</p>
-                    </div>
-                    <div className="flex-center">
-                      <Image
-                        src={task.taskCreator.picture}
-                        width="40"
-                        height="40"
-                        style={{ borderRadius: "50%" }}
-                        alt={task.taskCreator.name}
-                      />
-                      <p className="text-sm font-normal">
-                        {task.taskCreator.name}
-                      </p>
-                    </div>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <h6>{task.taskTitle}</h6>
-              </CardContent>
-              <CardFooter className="flex-center gap-5 justify-between">
-                <p className="text-sm font-normal">
-                  {new Date(task.createdAt).toLocaleDateString()}
-                </p>
-                <h6 className="text-sm">{task.plan.planCode}</h6>
-                <div className="flex-center justify-between"></div>
-                <AvatarGroup persons={task.persons} />
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
+        {searchResults.length === 0
+          ? tasks.map((task: Task) => (
+              <Link
+                key={task._id}
+                href={`/navigator/tasks/${task._id}/details`}
+                className="task-card"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      <div className="flex-center gap-5 justify-between">
+                        <div className="flex-center">
+                          <p className="text-sm font-normal">#{task.number}</p>
+                          <p className="text-sm font-normal">
+                            {task.taskCategory}
+                          </p>
+                        </div>
+                        <div className="flex-center">
+                          <Image
+                            src={task.taskCreator.picture}
+                            width="40"
+                            height="40"
+                            style={{ borderRadius: "50%" }}
+                            alt={task.taskCreator.name}
+                          />
+                          <p className="text-sm font-normal">
+                            {task.taskCreator.name}
+                          </p>
+                        </div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <h6>{task.taskTitle}</h6>
+                  </CardContent>
+                  <CardFooter className="flex-center gap-5 justify-between">
+                    <p className="text-sm font-normal">
+                      {new Date(task.createdAt).toLocaleDateString()}
+                    </p>
+                    <h6 className="text-sm">{task.plan.planCode}</h6>
+                    <div className="flex-center justify-between"></div>
+                    <AvatarGroup persons={task.persons} />
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))
+          : searchResults.map((task: Task) => (
+              <Link
+                key={task._id}
+                href={`/navigator/tasks/${task._id}/details`}
+                className="task-card"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      <div className="flex-center gap-5 justify-between">
+                        <div className="flex-center">
+                          <p className="text-sm font-normal">#{task.number}</p>
+                          <p className="text-sm font-normal">
+                            {task.taskCategory}
+                          </p>
+                        </div>
+                        <div className="flex-center">
+                          <Image
+                            src={task.taskCreator.picture}
+                            width="40"
+                            height="40"
+                            style={{ borderRadius: "50%" }}
+                            alt={task.taskCreator.name}
+                          />
+                          <p className="text-sm font-normal">
+                            {task.taskCreator.name}
+                          </p>
+                        </div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <h6>{task.taskTitle}</h6>
+                  </CardContent>
+                  <CardFooter className="flex-center gap-5 justify-between">
+                    <p className="text-sm font-normal">
+                      {new Date(task.createdAt).toLocaleDateString()}
+                    </p>
+                    <h6 className="text-sm">{task.plan.planCode}</h6>
+                    <div className="flex-center justify-between"></div>
+                    <AvatarGroup persons={task.persons} />
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
       </div>
     </div>
   );
