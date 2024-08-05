@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,12 +10,31 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogClose,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
@@ -23,11 +42,17 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { getForms } from "@/redux/actions/formActions";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { getAllUsers } from "@/redux/actions/userActions";
 
 interface Form {
   _id: string;
   formCategory: string;
   formTitle: string;
+  formDescription: string;
   date: string;
   formCreator: {
     _id: string;
@@ -43,9 +68,42 @@ interface Form {
   createdAt: string;
 }
 
+const getCompanyId = () => {
+  return localStorage.getItem("companyId");
+};
+
+const formSchema = z.object({
+  formTitle: z.string().nonempty("Plan kodu zorunludur"),
+  formCategory: z.string().nonempty("Plan kategori zorunludur"),
+  formDescription: z.string().nonempty("Plan kategori zorunludur"),
+  formPerson: z.any().optional(),
+});
+
 export default function Forms() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const forms = useSelector((state: RootState) => state.forms.forms);
+  const { user, users } = useSelector((state: RootState) => state.user);
+
+  const companyId = getCompanyId();
+
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllUsers(companyId));
+    } else {
+      console.error("Company ID is null");
+    }
+  }, [companyId, dispatch]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      formTitle: "",
+      formCategory: "",
+      formDescription: "",
+      formPerson: "",
+    },
+  });
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -54,6 +112,8 @@ export default function Forms() {
       dispatch(getForms(projectId));
     }
   }, [dispatch]);
+
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {};
 
   return (
     <div>
@@ -85,10 +145,95 @@ export default function Forms() {
                 Form eklemek için gerekli bilgileri giriniz.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4"></div>
-            <DialogFooter>
-              <Button type="submit">Form Ekle</Button>
-            </DialogFooter>
+            <div className="grid gap-4 py-4">
+              <Form {...form}>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                >
+                  {/* formTitle Input */}
+                  <FormField
+                    control={form.control}
+                    name="formTitle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Form Başlığı</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Form Başlığı" {...field} />
+                        </FormControl>
+                        <FormDescription>Form Başlığını Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* formCategory Input */}
+                  <FormField
+                    control={form.control}
+                    name="formCategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Form Kategorisi</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Form Kategorisi" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Form Kategorisini Girin
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* formDescription Input */}
+                  <FormField
+                    control={form.control}
+                    name="formDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Form Açıklaması</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Form Açıklaması" {...field} />
+                        </FormControl>
+                        <FormDescription>Form Açıklaması Girin</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* formPerson Input */}
+                  <FormField
+                    control={form.control}
+                    name="formPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>İlgili Kişiyi Seç</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kişi Seç" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {users.map((user) => (
+                                <SelectItem key={user._id} value={user._id}>
+                                  {user.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="submit">Form Ekle</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
