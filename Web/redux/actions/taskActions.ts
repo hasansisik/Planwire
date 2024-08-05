@@ -4,11 +4,11 @@ import { server } from "../../config";
 
 export interface CreateTaskPayload {
   projectId: string;
-  taskCategory: string;
+  taskCreator: any;
   taskTitle: string;
-  persons: string[];
-  plan: string;
-  taskCreator: string;
+  taskCategory: string;
+  plan?: any; // plan özelliğini isteğe bağlı hale getiriyoruz
+  persons: any;
 }
 
 interface UpdateTaskPayload {

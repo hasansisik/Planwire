@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { createTask, getTasks } from "@/redux/actions/taskActions";
+import {
+  createTask,
+  CreateTaskPayload,
+  getTasks,
+} from "@/redux/actions/taskActions";
 import AvatarGroup from "@/components/ui/avatar-group";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,8 +90,8 @@ const getCompanyId = () => {
 const formSchema = z.object({
   taskTitle: z.string().nonempty("Plan kodu zorunludur"),
   taskCategory: z.string().nonempty("Plan kategori zorunludur"),
-  plan: z.any().optional(),
-  persons: z.any().optional(),
+  plan: z.any(),
+  persons: z.any(),
 });
 
 export default function Tasks() {
@@ -130,14 +134,15 @@ export default function Tasks() {
     const url = new URL(window.location.href);
     const projectId = url.pathname.split("/").pop();
 
-    const payload = {
+    const payload: CreateTaskPayload = {
       ...data,
       projectId: projectId || "",
       taskCreator: user._id, // Assuming `user` is available in the component's scope
+      persons: data.persons, // persons özelliğini mutlaka ekliyoruz
+      plan: data.plan || null, // plan özelliğini mutlaka ekliyoruz
     };
 
     const actionResult = await dispatch(createTask(payload));
-
     if (createTask.fulfilled.match(actionResult)) {
       if (actionResult.payload) {
         toast({
@@ -156,12 +161,13 @@ export default function Tasks() {
       }
     } else if (createTask.rejected.match(actionResult)) {
       toast({
-        title: "Görev Oluşturma Başarısız",
+        title: "Görev Oluşturulamadı",
         description: actionResult.payload as React.ReactNode,
         variant: "destructive",
       });
     }
   };
+
   return (
     <div>
       <div className="pb-5">
