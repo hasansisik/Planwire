@@ -95,9 +95,17 @@ export default function Tasks() {
   const dispatch = useDispatch<AppDispatch>();
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
   const plans = useSelector((state: RootState) => state.plans.plans);
-  const {user,users} = useSelector((state: RootState) => state.user);
-  
+  const { user, users } = useSelector((state: RootState) => state.user);
+
   const companyId = getCompanyId();
+
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllUsers(companyId));
+    } else {
+      console.error("Company ID is null");
+    }
+  }, [companyId, dispatch]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
