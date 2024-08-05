@@ -2,9 +2,9 @@ import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { server } from "../../config";
 
-interface FormPayload {
+export interface CreateFormPayload {
   projectId: string;
-  formCategory: string;
+  formCategory: string; // Bu satırı ekleyin
   formTitle: string;
   formDescription: string;
   formCreator: string;
@@ -19,7 +19,7 @@ interface UpdateFormPayload {
 
 export const createForm = createAsyncThunk(
   "form/create",
-  async (payload: FormPayload, thunkAPI) => {
+  async (payload: CreateFormPayload, thunkAPI) => {
     try {
       console.log(payload);
       const response = await axios.post(`${server}/form/${payload.projectId}`, {
