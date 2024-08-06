@@ -20,9 +20,9 @@ interface VerifyEmailPayload {
   verificationCode: string;
 }
 
-interface ResetPasswordPayload {
+export interface ResetPasswordPayload {
   email: string;
-  passwordToken: string;
+  passwordToken: number;
   newPassword: string;
 }
 
@@ -132,8 +132,8 @@ export const forgotPassword = createAsyncThunk(
   "user/forgotPassword",
   async (email: string, thunkAPI) => {
     try {
-      await axios.post(`${server}/auth/forgot-password`, { email });
-      return;
+      const { data } = await axios.post(`${server}/auth/forgot-password`, { email });
+      return data.message;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
@@ -148,8 +148,9 @@ export const resetPassword = createAsyncThunk(
   "user/resetPassword",
   async (payload: ResetPasswordPayload, thunkAPI) => {
     try {
-      await axios.post(`${server}/auth/reset-password`, payload);
-      return;
+      console.log(payload);
+      const { data } = await axios.post(`${server}/auth/reset-password`, payload);
+      return data.message;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message
