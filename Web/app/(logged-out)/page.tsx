@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PersonStandingIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -28,6 +27,8 @@ import { useRouter } from "next/navigation";
 import { companyLogin, LoginPayload } from "@/redux/actions/companyActions";
 import { useAppDispatch } from "@/redux/hook";
 import { useToast } from "@/components/ui/use-toast";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   CompanyCode: z.string().nonempty("Şirket kodu gerekli"),
@@ -38,6 +39,27 @@ export default function CompanyPage() {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const className = document.body.className;
+    setIsDarkMode(className.includes("dark"));
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          const className = document.body.className;
+          setIsDarkMode(className.includes("dark"));
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,7 +96,13 @@ export default function CompanyPage() {
 
   return (
     <>
-      <PersonStandingIcon size={50} />
+      <Image
+        src={isDarkMode ? "/planwireWhite.png" : "/planwireBlack.png"}
+        width="140"
+        height="35"
+        alt="Planwire"
+        style={{ width: "140px", height: "35px" }}
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Şirket Giriş</CardTitle>
@@ -111,7 +139,7 @@ export default function CompanyPage() {
                   <FormItem>
                     <FormLabel>Şifre</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder="●●●●●●●●" {...field} />
+                      <PasswordInput placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormDescription>Şifrenizi girin</FormDescription>
                     <FormMessage />

@@ -28,6 +28,8 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hook";
 import { login, LoginPayload } from "@/redux/actions/userActions";
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 const getCompanyId = () => {
   return localStorage.getItem("companyId");
@@ -42,6 +44,28 @@ export default function LoginPage() {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const className = document.body.className;
+    setIsDarkMode(className.includes("dark"));
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          const className = document.body.className;
+          setIsDarkMode(className.includes("dark"));
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,7 +104,13 @@ export default function LoginPage() {
 
   return (
     <>
-      <PersonStandingIcon size={50} />
+      <Image
+        src={isDarkMode ? "/planwireWhite.png" : "/planwireBlack.png"}
+        width="140"
+        height="35"
+        alt="Planwire"
+        style={{ width: "140px", height: "35px" }}
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Giriş Yap</CardTitle>
@@ -117,7 +147,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Şifre</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder="●●●●●●●●" {...field} />
+                      <PasswordInput placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormDescription>Şifrenizi girin</FormDescription>
                     <FormMessage />

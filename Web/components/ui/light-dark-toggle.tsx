@@ -23,7 +23,7 @@ export function LightDarkToggle({ className }: Props) {
             {isDarkMode ? <MoonIcon /> : <SunIcon />}
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>
-          {isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          {isDarkMode ? "Aydınlık Tema" : "Karanlık Tema"}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

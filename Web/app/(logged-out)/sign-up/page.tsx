@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CalendarIcon, PersonStandingIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -33,6 +33,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 const accountTypeSchema = z
   .object({
@@ -93,6 +95,28 @@ const baseSchema = z.object({
 const formSchema = baseSchema.and(accountTypeSchema).and(passwordSchema);
 
 export default function SignupPage() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const className = document.body.className;
+    setIsDarkMode(className.includes("dark"));
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          const className = document.body.className;
+          setIsDarkMode(className.includes("dark"));
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -112,7 +136,13 @@ export default function SignupPage() {
 
   return (
     <>
-      <PersonStandingIcon size={50} />
+      <Image
+        src={isDarkMode ? "/planwireWhite.png" : "/planwireBlack.png"}
+        width="140"
+        height="35"
+        alt="Planwire"
+        style={{ width: "140px", height: "35px" }}
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Kayıt Ol</CardTitle>
@@ -211,7 +241,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder="●●●●●●●●" {...field} />
+                      <PasswordInput placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -249,12 +279,12 @@ export default function SignupPage() {
                       </FormLabel>
                     </div>
                     <FormDescription>
-                      Bir hesap oluşturarak şunları kabul etmiş olursunuz 
+                      Bir hesap oluşturarak şunları kabul etmiş olursunuz
                       <Link
                         href="/terms"
                         className="text-primary hover:underline font-bold"
                       >
-                         Şartlar ve Koşullar
+                        Şartlar ve Koşullar
                       </Link>
                     </FormDescription>
                     <FormMessage />
