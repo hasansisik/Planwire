@@ -45,7 +45,7 @@ export default function BlogPage() {
         </Button>
         <small>veya</small>
         <Button asChild variant="outline">
-          <Link href="/sign-up">Kayıt Ol</Link>
+          <Link href="/register">Kayıt Ol</Link>
         </Button>
       </div>
     </>
