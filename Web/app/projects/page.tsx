@@ -240,10 +240,9 @@ export default function Projects() {
                 <Image
                   src={project.logo}
                   alt="Planwire"
-                  layout="responsive"
-                  objectFit="cover"
                   width={150}
                   height={150}
+                  style={{ objectFit: "cover" }}
                   priority
                 />
               </CardContent>
