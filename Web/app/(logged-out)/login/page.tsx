@@ -161,7 +161,7 @@ export default function LoginPage() {
         <CardFooter className="justify-between">
           <small>Hesabınız yok mu ?</small>
           <Button asChild variant="outline" size="sm">
-            <Link href="/sign-up">Kayıt Ol</Link>
+            <Link href="/register">Kayıt Ol</Link>
           </Button>
         </CardFooter>
       </Card>

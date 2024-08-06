@@ -15,9 +15,9 @@ export interface LoginPayload {
   companyId: string;
 }
 
-interface VerifyEmailPayload {
+export interface VerifyEmailPayload {
   email: string;
-  verificationCode: string;
+  verificationCode: number;
 }
 
 export interface ResetPasswordPayload {

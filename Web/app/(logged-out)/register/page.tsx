@@ -106,7 +106,7 @@ export default function SignupPage() {
           title: "Giriş Başarılı",
           description: "Başarıyla giriş yaptınız.",
         });
-        router.push("/login");
+      router.push(`/verify?email=${encodeURIComponent(data.email)}`);
       } else {
         toast({
           title: "Giriş Başarısız",
