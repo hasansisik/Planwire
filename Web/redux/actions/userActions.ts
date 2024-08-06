@@ -148,7 +148,6 @@ export const resetPassword = createAsyncThunk(
   "user/resetPassword",
   async (payload: ResetPasswordPayload, thunkAPI) => {
     try {
-      console.log(payload);
       const { data } = await axios.post(`${server}/auth/reset-password`, payload);
       return data.message;
     } catch (error: any) {
