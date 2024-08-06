@@ -5,10 +5,13 @@ import MenuTitle from "./menu-title";
 import Link from "next/link";
 import { LightDarkToggle } from "@/components/ui/light-dark-toggle";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 export default function MainMenu({ className }: { className?: string }) {
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.user.user);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -63,7 +66,7 @@ export default function MainMenu({ className }: { className?: string }) {
         <Link href="/navigator/profile">
           <Avatar>
             <AvatarFallback className="bg-pink-300 dark:bg-pink-800">
-              NY
+              {user?.name?.slice(0, 2)}
             </AvatarFallback>
           </Avatar>
         </Link>
