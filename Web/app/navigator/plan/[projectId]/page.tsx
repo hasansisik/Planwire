@@ -81,7 +81,6 @@ export default function Plans() {
   const dispatch = useDispatch<AppDispatch>();
   const [searchKey, setSearchKey] = useState("");
   const [searchResults, setSearchResults] = useState<Plan[]>([]);
-
   const plans = useSelector((state: RootState) => state.plans.plans) as Plan[];
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -93,6 +92,9 @@ export default function Plans() {
       planImages: undefined,
     },
   });
+
+  const url = new URL(window.location.href);
+  const projectId = url.pathname.split("/").pop();
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -306,7 +308,10 @@ export default function Plans() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="cards-container">
-                <Link href={`/navigator/plan`} className="plan-card">
+                <Link
+                  href={`/navigator/plan/${projectId}/details`}
+                  className="plan-card"
+                >
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">
