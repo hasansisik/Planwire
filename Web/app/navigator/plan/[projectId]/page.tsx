@@ -309,7 +309,7 @@ export default function Plans() {
               </AccordionTrigger>
               <AccordionContent className="cards-container">
                 <Link
-                  href={`/navigator/plan/${projectId}/details`}
+                  href={`/navigator/plan/${projectId}/details/?planId=${item._id}`}
                   className="plan-card"
                 >
                   <Card>
@@ -346,7 +346,10 @@ export default function Plans() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="cards-container">
-                <Link href={`/navigator/plan`} className="plan-card">
+                <Link
+                  href={`/navigator/plan/${projectId}/details/?planId=${item._id}`}
+                  className="plan-card"
+                >
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">

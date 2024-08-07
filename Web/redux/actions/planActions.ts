@@ -49,7 +49,7 @@ export const getPlan = createAsyncThunk(
   "plan/get",
   async (planId: string, thunkAPI) => {
     try {
-      const { data } = await axios.get(`${server}/plan/${planId}`);
+      const { data } = await axios.get(`${server}/plan/single/${planId}`);
       return data.plan;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data.message);
