@@ -14,13 +14,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default function PlanPage() {
+export default function PlanPDetails() {
   const dispatch = useDispatch<AppDispatch>();
   const plan = useSelector((state: RootState) => state.plans.plan);
   const searchParams = useSearchParams();
   const planId = searchParams.get("planId");
 
-  const [mode, setMode] = useState<"draw" | "text" | null>(null);
+  const [mode, setMode] = useState<"draw" | "text" | "pin" | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -55,12 +55,30 @@ export default function PlanPage() {
     }
   };
 
+ const handlePin = (e: React.MouseEvent) => {
+   e.stopPropagation();
+   if (mode === "pin" && canvasRef.current) {
+     const canvas = canvasRef.current;
+     const rect = canvas.getBoundingClientRect();
+     const x = e.clientX - rect.left;
+     const y = e.clientY - rect.top;
+
+     const pin = document.createElement("div");
+     pin.style.position = "absolute";
+     pin.style.left = `${x}px`;
+     pin.style.top = `${y}px`;
+     pin.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M21 10c0 5.523-9 13-9 13S3 15.523 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+     canvas.parentElement?.appendChild(pin);
+   }
+ };
+
   const tooltips = [
     {
       icon: <MapPin />,
       text: "Pin Ekle",
-      onClick: () => setMode(null),
-      modeValue: null,
+      onClick: () => setMode("pin"),
+      modeValue: "pin",
     },
     {
       icon: <Pencil />,
@@ -129,7 +147,13 @@ export default function PlanPage() {
                         top: 0,
                         left: 0,
                       }}
-                      onClick={mode === "text" ? handleText : handleDraw}
+                      onClick={
+                        mode === "text"
+                          ? handleText
+                          : mode === "pin"
+                          ? handlePin
+                          : handleDraw
+                      }
                     />
                   </div>
                 </TransformComponent>
