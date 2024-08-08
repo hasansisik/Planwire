@@ -58,21 +58,29 @@ export default function PlanPDetails() {
     }
   };
 
-  const handlePin = (e: React.MouseEvent) => {
+    const handlePin = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (mode === "pin" && canvasRef.current) {
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
+  
       const { width, height } = canvas;
       const scaleX = width / rect.width;
       const scaleY = height / rect.height;
-
-      const pinX = ((x * scaleX) / width) * 100;
-      const pinY = ((y * scaleY) / height) * 100;
-
+  
+      // Pin boyutları
+      const pinWidth = 24;
+      const pinHeight = 30;
+  
+      // Fare imlecinin ucundaki noktayı hedeflemek için konumları ayarla
+      const adjustedX = x - pinWidth / 2;
+      const adjustedY = y - pinHeight / 2;
+  
+      const pinX = ((adjustedX * scaleX) / width) * 100;
+      const pinY = ((adjustedY * scaleY) / height) * 100;
+  
       const pin = document.createElement("div");
       pin.style.position = "absolute";
       pin.style.left = `${pinX}%`;
@@ -99,7 +107,7 @@ export default function PlanPDetails() {
           />
         </svg>
       );
-
+  
       pin.innerHTML = svgString;
       canvas.parentElement?.appendChild(pin);
     }
