@@ -1,36 +1,120 @@
 "use client";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState, useRef } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getPlan, getPins } from "@/redux/actions/planActions";
+import {
+  getPlan,
+  getPins,
+  getPlans,
+  createPin,
+} from "@/redux/actions/planActions";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MapPin, Pencil, Type } from "lucide-react";
+import { MapPin, Pencil, Plus, Type } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ReactDOMServer from "react-dom/server";
+import { Input } from "@/components/ui/input";
+import { getAllUsers } from "@/redux/actions/userActions";
+import { createTask, CreateTaskPayload } from "@/redux/actions/taskActions";
+
+const getCompanyId = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("companyId");
+  }
+  return null;
+};
+
+const formSchema = z.object({
+  taskTitle: z.string().nonempty("Plan kodu zorunludur"),
+  taskCategory: z.string().nonempty("Plan kategori zorunludur"),
+  persons: z.any(),
+});
 
 export default function PlanPDetails() {
+  const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const plan = useSelector((state: RootState) => state.plans.plan);
   const pins = useSelector((state: RootState) => state.plans.pins);
   const searchParams = useSearchParams();
   const planId = searchParams.get("planId");
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mode, setMode] = useState<"draw" | "text" | "pin" | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(
+    null
+  );
+
+  const { user, users } = useSelector((state: RootState) => state.user);
+
+  const companyId = getCompanyId();
+
+  const fetchPins = async () => {
+    if (planId) {
+      await dispatch(getPins(planId));
+    }
+  };
 
   useEffect(() => {
     if (planId) {
       dispatch(getPlan(planId));
-      dispatch(getPins(planId)); // Fetch pins
+      fetchPins();
     }
   }, [dispatch, planId]);
+
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllUsers(companyId));
+    } else {
+      console.error("Company ID is null");
+    }
+  }, [companyId, dispatch]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      taskTitle: "",
+      taskCategory: "",
+      persons: "",
+    },
+  });
 
   const handleDraw = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,29 +142,79 @@ export default function PlanPDetails() {
     }
   };
 
-    const handlePin = (e: React.MouseEvent) => {
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const url = new URL(window.location.href);
+    const pathSegments = url.pathname.split("/");
+    const projectId = pathSegments[pathSegments.indexOf("plan") + 1];
+    const payload: CreateTaskPayload = {
+      ...data,
+      projectId: projectId || "",
+      taskCreator: user._id,
+      persons: data.persons,
+      plan: planId || null,
+    };
+    console.log("payload", payload);
+    const actionResult = await dispatch(createTask(payload));
+    if (createTask.fulfilled.match(actionResult)) {
+      if (actionResult.payload) {
+        toast({
+          title: "Görev Oluşturuldu",
+          description: "Başarıyla görev oluşturuldu.",
+        });
+        setIsDialogOpen(false);
+        const taskId = actionResult.payload._id;
+        if (pendingPin) {
+          await dispatch(
+            createPin({
+              planId: plan._id,
+              x: pendingPin.x,
+              y: pendingPin.y,
+              task: taskId,
+            })
+          );
+          setPendingPin(null);
+          await fetchPins();
+        }
+      } else {
+        toast({
+          title: "Görev Oluşturulamadı",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (createTask.rejected.match(actionResult)) {
+      toast({
+        title: "Görev Oluşturulamadı",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePin = (e: React.MouseEvent) => {
+    setIsDialogOpen(true);
     e.stopPropagation();
     if (mode === "pin" && canvasRef.current) {
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-  
+
       const { width, height } = canvas;
       const scaleX = width / rect.width;
       const scaleY = height / rect.height;
-  
-      // Pin boyutları
+
       const pinWidth = 24;
       const pinHeight = 30;
-  
-      // Fare imlecinin ucundaki noktayı hedeflemek için konumları ayarla
+
       const adjustedX = x - pinWidth / 2;
       const adjustedY = y - pinHeight / 2;
-  
+
       const pinX = ((adjustedX * scaleX) / width) * 100;
       const pinY = ((adjustedY * scaleY) / height) * 100;
-  
+
+      setPendingPin({ x: pinX, y: pinY });
+
       const pin = document.createElement("div");
       pin.style.position = "absolute";
       pin.style.left = `${pinX}%`;
@@ -107,7 +241,7 @@ export default function PlanPDetails() {
           />
         </svg>
       );
-  
+
       pin.innerHTML = svgString;
       canvas.parentElement?.appendChild(pin);
     }
@@ -252,6 +386,93 @@ export default function PlanPDetails() {
                 ))}
               </TooltipProvider>
             </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Görev Ekle</DialogTitle>
+                  <DialogDescription>
+                    Görev eklemek için gerekli bilgileri giriniz.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <Form {...form}>
+                    <form
+                      className="flex flex-col gap-4"
+                      onSubmit={form.handleSubmit(handleSubmit)}
+                    >
+                      {/* taskTitle Input */}
+                      <FormField
+                        control={form.control}
+                        name="taskTitle"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Görev İsmi</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Görev Başlığı" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Görev Başlığı Girin
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {/* taskCategory Input */}
+                      <FormField
+                        control={form.control}
+                        name="taskCategory"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Görev Kategorisi</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Görev Kategorisi"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Görev Kategorisi Girin
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {/* Persons Input */}
+                      <FormField
+                        control={form.control}
+                        name="persons"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Kişi Seç</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Kişi Seç" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {users.map((user) => (
+                                    <SelectItem key={user._id} value={user._id}>
+                                      {user.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <Button type="submit">Görev Ekle</Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         <div>

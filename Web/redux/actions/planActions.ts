@@ -84,7 +84,7 @@ export const deletePlan = createAsyncThunk(
   }
 );
 
-interface CreatePinPayload {
+export interface CreatePinPayload {
   planId: string;
   x: number;
   y: number;
