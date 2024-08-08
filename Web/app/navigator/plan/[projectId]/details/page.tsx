@@ -7,15 +7,10 @@ import { useEffect, useState, useRef } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import {
-  getPlan,
-  getPins,
-  getPlans,
-  createPin,
-} from "@/redux/actions/planActions";
+import { getPlan, getPins, createPin } from "@/redux/actions/planActions";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MapPin, Pencil, Plus, Type } from "lucide-react";
+import { MapPin, Pencil, Type } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -25,28 +20,24 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogClose,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -55,12 +46,8 @@ import { Input } from "@/components/ui/input";
 import { getAllUsers } from "@/redux/actions/userActions";
 import { createTask, CreateTaskPayload } from "@/redux/actions/taskActions";
 
-const getCompanyId = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("companyId");
-  }
-  return null;
-};
+const getCompanyId = () =>
+  typeof window !== "undefined" ? localStorage.getItem("companyId") : null;
 
 const formSchema = z.object({
   taskTitle: z.string().nonempty("Plan kodu zorunludur"),
@@ -81,15 +68,11 @@ export default function PlanPDetails() {
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(
     null
   );
-
   const { user, users } = useSelector((state: RootState) => state.user);
-
   const companyId = getCompanyId();
 
   const fetchPins = async () => {
-    if (planId) {
-      await dispatch(getPins(planId));
-    }
+    if (planId) await dispatch(getPins(planId));
   };
 
   useEffect(() => {
@@ -153,7 +136,6 @@ export default function PlanPDetails() {
       persons: data.persons,
       plan: planId || null,
     };
-    console.log("payload", payload);
     const actionResult = await dispatch(createTask(payload));
     if (createTask.fulfilled.match(actionResult)) {
       if (actionResult.payload) {
@@ -199,22 +181,16 @@ export default function PlanPDetails() {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
       const { width, height } = canvas;
       const scaleX = width / rect.width;
       const scaleY = height / rect.height;
-
       const pinWidth = 24;
       const pinHeight = 30;
-
       const adjustedX = x - pinWidth / 2;
       const adjustedY = y - pinHeight / 2;
-
       const pinX = ((adjustedX * scaleX) / width) * 100;
       const pinY = ((adjustedY * scaleY) / height) * 100;
-
       setPendingPin({ x: pinX, y: pinY });
-
       const pin = document.createElement("div");
       pin.style.position = "absolute";
       pin.style.left = `${pinX}%`;
@@ -241,7 +217,6 @@ export default function PlanPDetails() {
           />
         </svg>
       );
-
       pin.innerHTML = svgString;
       canvas.parentElement?.appendChild(pin);
     }
@@ -279,12 +254,10 @@ export default function PlanPDetails() {
       </div>
       <div className="flex flex-row justify-between">
         <div>
-          <div>
-            <h6>Proje Adı: {plan.planName}</h6>
-            <p className="text-muted-foreground font-normal text-sm pb-5">
-              Plan Kodu: {plan.planCode} , Plan Kategori : {plan.planCategory}
-            </p>
-          </div>
+          <h6>Proje Adı: {plan.planName}</h6>
+          <p className="text-muted-foreground font-normal text-sm pb-5">
+            Plan Kodu: {plan.planCode} , Plan Kategori : {plan.planCategory}
+          </p>
           <div className="flex flex-row justify-between gap-5">
             <div
               style={{
@@ -400,7 +373,6 @@ export default function PlanPDetails() {
                       className="flex flex-col gap-4"
                       onSubmit={form.handleSubmit(handleSubmit)}
                     >
-                      {/* taskTitle Input */}
                       <FormField
                         control={form.control}
                         name="taskTitle"
@@ -417,7 +389,6 @@ export default function PlanPDetails() {
                           </FormItem>
                         )}
                       />
-                      {/* taskCategory Input */}
                       <FormField
                         control={form.control}
                         name="taskCategory"
@@ -437,7 +408,6 @@ export default function PlanPDetails() {
                           </FormItem>
                         )}
                       />
-                      {/* Persons Input */}
                       <FormField
                         control={form.control}
                         name="persons"
