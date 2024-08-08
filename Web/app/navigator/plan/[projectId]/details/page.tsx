@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { getPlan } from "@/redux/actions/planActions";
+import { getPlan, getPins } from "@/redux/actions/planActions";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MapPin, Pencil, Type } from "lucide-react";
@@ -13,10 +13,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ReactDOMServer from "react-dom/server";
 
 export default function PlanPDetails() {
   const dispatch = useDispatch<AppDispatch>();
   const plan = useSelector((state: RootState) => state.plans.plan);
+  const pins = useSelector((state: RootState) => state.plans.pins);
   const searchParams = useSearchParams();
   const planId = searchParams.get("planId");
 
@@ -26,6 +28,7 @@ export default function PlanPDetails() {
   useEffect(() => {
     if (planId) {
       dispatch(getPlan(planId));
+      dispatch(getPins(planId)); // Fetch pins
     }
   }, [dispatch, planId]);
 
@@ -55,23 +58,47 @@ export default function PlanPDetails() {
     }
   };
 
- const handlePin = (e: React.MouseEvent) => {
-   e.stopPropagation();
-   if (mode === "pin" && canvasRef.current) {
-     const canvas = canvasRef.current;
-     const rect = canvas.getBoundingClientRect();
-     const x = e.clientX - rect.left;
-     const y = e.clientY - rect.top;
+  const handlePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (mode === "pin" && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-     const pin = document.createElement("div");
-     pin.style.position = "absolute";
-     pin.style.left = `${x}px`;
-     pin.style.top = `${y}px`;
-     pin.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M21 10c0 5.523-9 13-9 13S3 15.523 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+      const pin = document.createElement("div");
+      pin.style.position = "absolute";
+      pin.style.left = `${x}px`;
+      pin.style.top = `${y}px`;
+      const svgString = ReactDOMServer.renderToString(
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 30"
+          fill="none"
+          width="24"
+          height="30"
+        >
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M12 12C13.6569 12 15 10.6569 15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12Z"
+            fill="red"
+          />
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M12 22C15 22 20 14.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 14.4183 9 22 12 22ZM16.2675 15.2202C17.3398 13.2872 18 11.3235 18 10C18 6.68629 15.3137 4 12 4C8.68629 4 6 6.68629 6 10C6 11.3499 6.68682 13.3658 7.79716 15.3358C8.62357 14.2077 9.87268 13 12 13C14.0518 13 15.5373 14.1153 16.2675 15.2202Z"
+            fill="red"
+          />
+        </svg>
+      );
 
-     canvas.parentElement?.appendChild(pin);
-   }
- };
+      pin.innerHTML = svgString;
+      canvas.parentElement?.appendChild(pin);
+
+      canvas.parentElement?.appendChild(pin);
+    }
+  };
 
   const tooltips = [
     {
@@ -115,7 +142,7 @@ export default function PlanPDetails() {
             <div
               style={{
                 width: "1000px",
-                height: "700px",
+                height: "1000px",
                 overflow: "hidden",
                 border: "1px solid #ccc",
                 position: "relative",
@@ -155,6 +182,38 @@ export default function PlanPDetails() {
                           : handleDraw
                       }
                     />
+                    {pins.map((pin, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          position: "absolute",
+                          left: `${pin.x}%`,
+                          top: `${pin.y}%`,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 30"
+                          fill="none"
+                          width="24"
+                          height="30"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M12 12C13.6569 12 15 10.6569 15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12Z"
+                            fill="red"
+                          />
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M12 22C15 22 20 14.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 14.4183 9 22 12 22ZM16.2675 15.2202C17.3398 13.2872 18 11.3235 18 10C18 6.68629 15.3137 4 12 4C8.68629 4 6 6.68629 6 10C6 11.3499 6.68682 13.3658 7.79716 15.3358C8.62357 14.2077 9.87268 13 12 13C14.0518 13 15.5373 14.1153 16.2675 15.2202Z"
+                            fill="red"
+                          />
+                        </svg>
+                      </div>
+                    ))}
                   </div>
                 </TransformComponent>
               </TransformWrapper>
