@@ -66,10 +66,17 @@ export default function PlanPDetails() {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
+      const { width, height } = canvas;
+      const scaleX = width / rect.width;
+      const scaleY = height / rect.height;
+
+      const pinX = ((x * scaleX) / width) * 100;
+      const pinY = ((y * scaleY) / height) * 100;
+
       const pin = document.createElement("div");
       pin.style.position = "absolute";
-      pin.style.left = `${x}px`;
-      pin.style.top = `${y}px`;
+      pin.style.left = `${pinX}%`;
+      pin.style.top = `${pinY}%`;
       const svgString = ReactDOMServer.renderToString(
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -94,8 +101,6 @@ export default function PlanPDetails() {
       );
 
       pin.innerHTML = svgString;
-      canvas.parentElement?.appendChild(pin);
-
       canvas.parentElement?.appendChild(pin);
     }
   };
