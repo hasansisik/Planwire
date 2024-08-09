@@ -125,58 +125,11 @@ export default function PlanPDetails() {
     }
   };
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    const url = new URL(window.location.href);
-    const pathSegments = url.pathname.split("/");
-    const projectId = pathSegments[pathSegments.indexOf("plan") + 1];
-    const payload: CreateTaskPayload = {
-      ...data,
-      projectId: projectId || "",
-      taskCreator: user._id,
-      persons: data.persons,
-      plan: planId || null,
-    };
-    const actionResult = await dispatch(createTask(payload));
-    if (createTask.fulfilled.match(actionResult)) {
-      if (actionResult.payload) {
-        toast({
-          title: "Görev Oluşturuldu",
-          description: "Başarıyla görev oluşturuldu.",
-        });
-        setIsDialogOpen(false);
-        const taskId = actionResult.payload._id;
-        if (pendingPin) {
-          await dispatch(
-            createPin({
-              planId: plan._id,
-              x: pendingPin.x,
-              y: pendingPin.y,
-              task: taskId,
-            })
-          );
-          setPendingPin(null);
-          await fetchPins();
-        }
-      } else {
-        toast({
-          title: "Görev Oluşturulamadı",
-          description: "Geçersiz yanıt formatı.",
-          variant: "destructive",
-        });
-      }
-    } else if (createTask.rejected.match(actionResult)) {
-      toast({
-        title: "Görev Oluşturulamadı",
-        description: actionResult.payload as React.ReactNode,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handlePin = (e: React.MouseEvent) => {
-    setIsDialogOpen(true);
+  const handlePin = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (mode === "pin" && canvasRef.current) {
+      setIsDialogOpen(true);
+
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -190,35 +143,58 @@ export default function PlanPDetails() {
       const adjustedY = y - pinHeight / 2;
       const pinX = ((adjustedX * scaleX) / width) * 100;
       const pinY = ((adjustedY * scaleY) / height) * 100;
+
       setPendingPin({ x: pinX, y: pinY });
-      const pin = document.createElement("div");
-      pin.style.position = "absolute";
-      pin.style.left = `${pinX}%`;
-      pin.style.top = `${pinY}%`;
-      const svgString = ReactDOMServer.renderToString(
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 30"
-          fill="none"
-          width="24"
-          height="30"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M12 12C13.6569 12 15 10.6569 15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12Z"
-            fill="red"
-          />
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M12 22C15 22 20 14.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 14.4183 9 22 12 22ZM16.2675 15.2202C17.3398 13.2872 18 11.3235 18 10C18 6.68629 15.3137 4 12 4C8.68629 4 6 6.68629 6 10C6 11.3499 6.68682 13.3658 7.79716 15.3358C8.62357 14.2077 9.87268 13 12 13C14.0518 13 15.5373 14.1153 16.2675 15.2202Z"
-            fill="red"
-          />
-        </svg>
-      );
-      pin.innerHTML = svgString;
-      canvas.parentElement?.appendChild(pin);
+    }
+  };
+
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const url = new URL(window.location.href);
+    const pathSegments = url.pathname.split("/");
+    const projectId = pathSegments[pathSegments.indexOf("plan") + 1];
+    const payload: CreateTaskPayload = {
+      ...data,
+      projectId: projectId || "",
+      taskCreator: user._id,
+      persons: data.persons,
+      plan: planId || null,
+    };
+
+    const actionResult = await dispatch(createTask(payload));
+
+    if (createTask.fulfilled.match(actionResult)) {
+      if (actionResult.payload && pendingPin) {
+        toast({
+          title: "Görev Oluşturuldu",
+          description: "Başarıyla görev oluşturuldu.",
+        });
+        setIsDialogOpen(false);
+        const taskId = actionResult.payload._id;
+
+        await dispatch(
+          createPin({
+            planId: plan._id,
+            x: pendingPin.x,
+            y: pendingPin.y,
+            task: taskId,
+          })
+        );
+
+        setPendingPin(null);
+        await fetchPins();
+      } else {
+        toast({
+          title: "Görev Oluşturulamadı",
+          description: "Geçersiz yanıt formatı.",
+          variant: "destructive",
+        });
+      }
+    } else if (createTask.rejected.match(actionResult)) {
+      toast({
+        title: "Görev Oluşturulamadı",
+        description: actionResult.payload as React.ReactNode,
+        variant: "destructive",
+      });
     }
   };
 
