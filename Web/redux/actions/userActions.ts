@@ -79,6 +79,7 @@ export const loadUser = createAsyncThunk(
     }
   }
 );
+
 export const logout = createAsyncThunk("user/logout", async (_, thunkAPI) => {
   try {
     const token = localStorage.getItem("accessToken");

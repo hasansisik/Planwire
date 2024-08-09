@@ -1,12 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import MainMenu from "./components/main-menu";
 import MenuTitle from "./components/menu-title";
 import { MenuIcon } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { loadUser } from "@/redux/actions/userActions";
 
 export default function DashboardLayout({
   children,
@@ -15,6 +18,12 @@ export default function DashboardLayout({
 }) {
   const isDesktop = useMediaQuery("min-width: 768px");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(loadUser());
+  }, [dispatch]);
+
   return (
     <div className="md:grid md:grid-cols-[250px_1fr] h-screen">
       <MainMenu className="hidden md:flex" />
