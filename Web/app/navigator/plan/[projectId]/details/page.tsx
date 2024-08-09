@@ -8,6 +8,7 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { getPlan, getPins, createPin } from "@/redux/actions/planActions";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MapPin, Pencil, Type } from "lucide-react";
@@ -45,6 +46,61 @@ import ReactDOMServer from "react-dom/server";
 import { Input } from "@/components/ui/input";
 import { getAllUsers } from "@/redux/actions/userActions";
 import { createTask, CreateTaskPayload } from "@/redux/actions/taskActions";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const invoices = [
+  {
+    invoice: "INV001",
+    paymentStatus: "Paid",
+    totalAmount: "$250.00",
+    paymentMethod: "Credit Card",
+  },
+  {
+    invoice: "INV002",
+    paymentStatus: "Pending",
+    totalAmount: "$150.00",
+    paymentMethod: "PayPal",
+  },
+  {
+    invoice: "INV003",
+    paymentStatus: "Unpaid",
+    totalAmount: "$350.00",
+    paymentMethod: "Bank Transfer",
+  },
+  {
+    invoice: "INV004",
+    paymentStatus: "Paid",
+    totalAmount: "$450.00",
+    paymentMethod: "Credit Card",
+  },
+  {
+    invoice: "INV005",
+    paymentStatus: "Paid",
+    totalAmount: "$550.00",
+    paymentMethod: "PayPal",
+  },
+  {
+    invoice: "INV006",
+    paymentStatus: "Pending",
+    totalAmount: "$200.00",
+    paymentMethod: "Bank Transfer",
+  },
+  {
+    invoice: "INV007",
+    paymentStatus: "Unpaid",
+    totalAmount: "$300.00",
+    paymentMethod: "Credit Card",
+  },
+];
 
 const getCompanyId = () =>
   typeof window !== "undefined" ? localStorage.getItem("companyId") : null;
@@ -57,6 +113,7 @@ const formSchema = z.object({
 
 export default function PlanPDetails() {
   const { toast } = useToast();
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const plan = useSelector((state: RootState) => state.plans.plan);
   const pins = useSelector((state: RootState) => state.plans.pins);
@@ -219,6 +276,13 @@ export default function PlanPDetails() {
     },
   ];
 
+  const handlePinClick = (taskId: string) => {
+    const url = new URL(window.location.href);
+    const pathSegments = url.pathname.split("/");
+    const projectId = pathSegments[pathSegments.indexOf("plan") + 1];
+    router.push(`/navigator/task/${projectId}/details/?taskId=${taskId}`);
+  };
+
   return (
     <div>
       <div className="pb-5">
@@ -228,7 +292,7 @@ export default function PlanPDetails() {
           yapabilirsiniz.
         </p>
       </div>
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-between gap-5">
         <div>
           <h6>Proje Adı: {plan.planName}</h6>
           <p className="text-muted-foreground font-normal text-sm pb-5">
@@ -237,8 +301,8 @@ export default function PlanPDetails() {
           <div className="flex flex-row justify-between gap-5">
             <div
               style={{
-                width: "1000px",
-                height: "1000px",
+                width: "900px",
+                height: "700px",
                 overflow: "hidden",
                 border: "1px solid #ccc",
                 position: "relative",
@@ -287,6 +351,7 @@ export default function PlanPDetails() {
                           top: `${pin.y}%`,
                           transform: "translate(-50%, -50%)",
                         }}
+                        onClick={() => handlePinClick(pin.task._id)}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -423,9 +488,37 @@ export default function PlanPDetails() {
         </div>
         <div>
           <h6>Görev Detayları</h6>
-          <p className="text-muted-foreground font-normal text-xs">
+          <p className="text-muted-foreground font-normal text-xs pb-5">
             Görev buradan inceleyebilir, ekleyebilir ve arama yapabilirsiniz.
           </p>
+          <Table>
+            <TableCaption>Bu plana ait görevler.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Id</TableHead>
+                <TableHead>Başlık</TableHead>
+                <TableHead>Kategori</TableHead>
+                <TableHead className="text-right">Tarih</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pins.map((pin) => (
+                <TableRow
+                  key={pin.task._id}
+                  onClick={() => handlePinClick(pin.task._id)}
+                >
+                  <TableCell className="font-medium">
+                    {pin.task.number}
+                  </TableCell>
+                  <TableCell>{pin.task.taskTitle}</TableCell>
+                  <TableCell>{pin.task.taskCategory}</TableCell>
+                  <TableCell className="text-right">
+                    {new Date(pin.task.createdAt).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
