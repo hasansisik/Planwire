@@ -42,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ReactDOMServer from "react-dom/server";
 import { Input } from "@/components/ui/input";
 import { getAllUsers } from "@/redux/actions/userActions";
 import { createTask, CreateTaskPayload } from "@/redux/actions/taskActions";
@@ -52,7 +51,6 @@ import {
   TableCaption,
   TableCell,
   TableFooter,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
